@@ -1,5 +1,4 @@
 import json
-import pandas as pd
 import yfinance as yf
 from candles import Candles
 from indicator import SMA
@@ -21,4 +20,4 @@ if __name__ == '__main__':
     # indicator
     sma100 = SMA(data=candles, window=100)
     sma200 = SMA(data=candles, window=200)
-    candles.plot(indicators=[sma100.indicator(), sma200.indicator()])
+    candles.plot(indicators=[sma100, sma200])

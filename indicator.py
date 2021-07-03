@@ -11,6 +11,10 @@ class Indicator:
     def indicator(self) -> pd.DataFrame:
         raise NotImplementedError()
 
+    @property
+    def name(self):
+        return 'Indicator'
+
 
 class SMA(Indicator):
 
@@ -20,6 +24,10 @@ class SMA(Indicator):
         assert window <= self.num_ticks
         self.window = window
         self.param = param
+
+    @property
+    def name(self):
+        return f'SMA{self.window}'
 
     @staticmethod
     def rolling_mean(x: pd.DataFrame, window):

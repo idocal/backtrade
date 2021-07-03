@@ -43,19 +43,24 @@ class Candles:
         return self.colors.pop(random.randrange(len(self.colors)))
 
     def plot(self, indicators=[]):
+        # plot candlesticks
         candlesticks_data = go.Candlestick(x=self.data.index,
                                            open=self.open,
                                            high=self.high,
                                            low=self.low,
                                            close=self.close)
         fig = go.Figure(data=[candlesticks_data])
-        if len(indicators):
-            for indicator in indicators:
-                color = self.random_color()
-                line = go.Scatter(x=self.data.index,
-                                  y=indicator,
-                                  mode="lines",
-                                  line=go.scatter.Line(color=color))
-                fig.add_trace(line)
+
+        # add indicators on top
+        for indicator in indicators:
+            values = indicator.indicator()
+            color = self.random_color()
+            line = go.Scatter(x=self.data.index,
+                              y=values,
+                              mode="lines",
+                              name=indicator.name,
+                              line=go.scatter.Line(color=color))
+            fig.add_trace(line)
+
         fig.update_layout(xaxis_rangeslider_visible=False)
         fig.show()
