@@ -27,7 +27,7 @@ class SMA(Indicator):
 
     @property
     def name(self):
-        return f'SMA{self.window}'
+        return f'{self.window} SMA'
 
     @staticmethod
     def rolling_mean(x: pd.DataFrame, window):
