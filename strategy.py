@@ -3,6 +3,7 @@ import numpy as np
 from indicator import SMA
 from enum import Enum
 from dataclasses import dataclass
+from candles import Candles
 
 
 class Decision(Enum):
@@ -21,7 +22,7 @@ class Position:
 
 class Strategy:
 
-    def __init__(self, data: pd.DataFrame):
+    def __init__(self, data: Candles):
         self.data = data
 
     def backtest(self) -> np.ndarray:
@@ -30,7 +31,7 @@ class Strategy:
 
 class SMACrossover(Strategy):
 
-    def __init__(self, data, small=10, large=30):
+    def __init__(self, data, small=50, large=200):
         super().__init__(data)
         self.small = small
         self.large = large
@@ -46,11 +47,12 @@ class SMACrossover(Strategy):
         for i in range(1, len(large_sma_values)):
             is_current_small_higher = small_sma_values[i] > large_sma_values[i]
             if is_current_small_higher != is_small_higher:
-                trend = small_sma_values[i] - small_sma[i-1]
+                trend = small_sma_values[i] - small_sma_values[i-1]
                 if trend > 0:
                     position = Position(decision=Decision.SELL)
                 else:
                     position = Position(decision=Decision.BUY)
+                is_small_higher = is_current_small_higher
             else:
                 position = Position(decision=Decision.HOLD)
 
