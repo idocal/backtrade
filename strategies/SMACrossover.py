@@ -1,45 +1,18 @@
-import pandas as pd
-import numpy as np
-from indicator import SMA
-from enum import Enum
-from dataclasses import dataclass
-from candles import Candles
-
-
-class Decision(Enum):
-    BUY = 1
-    HOLD = 0
-    SELL = -1
-
-
-@dataclass
-class Position:
-    decision: Decision
-    stop_loss: float = 0.0
-    take_profit: float = 0.0
-    amount: float = 0.1
-
-
-class Strategy:
-
-    def __init__(self, data: Candles):
-        self.data = data
-
-    def backtest(self) -> np.ndarray:
-        return NotImplementedError("Strategies must implement backtest")
+from strategies.strategy import Strategy, Position, Decision
+from indicators.SMA import SMA
 
 
 class SMACrossover(Strategy):
 
-    def __init__(self, data, small=50, large=200):
-        super().__init__(data)
+    def __init__(self, candles, small=50, large=200):
+        super().__init__(candles)
         self.small = small
         self.large = large
 
     def backtest(self):
-        small_sma = SMA(data=self.data, window=self.small)
+        small_sma = SMA(candles=self.candles, period=self.small)
         small_sma_values = small_sma.indicator()
-        large_sma = SMA(data=self.data, window=self.large)
+        large_sma = SMA(candles=self.candles, period=self.large)
         large_sma_values = large_sma.indicator()
 
         positions = []

@@ -1,9 +1,9 @@
 import json
 import yfinance as yf
 from candles import Candles
-from strategy import SMACrossover
 from loguru import logger
-from strategy import Decision
+from strategies.SMACrossover import SMACrossover
+from strategies.strategy import Decision
 
 
 class Backtest:
@@ -30,7 +30,7 @@ class Backtest:
         logger.debug(f"Detected {len(candles)} ticks")
 
         # strategy
-        strategy = SMACrossover(data=candles)
+        strategy = SMACrossover(candles=candles)
         positions = strategy.backtest()
         non_hold = [p for p in positions if p.decision != Decision.HOLD]
         logger.debug(f"Decided on {len(non_hold)} positions")
