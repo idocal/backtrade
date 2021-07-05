@@ -1,7 +1,8 @@
 import json
 import yfinance as yf
 from candles import Candles
-from indicator import SMA
+from indicators.SMA import SMA
+from indicators.RSI import RSI
 
 if __name__ == '__main__':
     # configuration
@@ -20,4 +21,5 @@ if __name__ == '__main__':
     # indicator
     sma100 = SMA(candles=candles, period=100)
     sma200 = SMA(candles=candles, period=200)
-    candles.plot(indicators=[sma100, sma200])
+    rsi100 = RSI(candles=candles, period=100)
+    candles.plot(indicators=[sma100, sma200, rsi100])
