@@ -1,7 +1,7 @@
 from enum import Enum
 from dataclasses import dataclass
 from candles import Candles
-from typing import List
+from typing import List, Union
 
 
 class Decision(Enum):
@@ -20,8 +20,10 @@ class Position:
 
 class Strategy:
 
-    def __init__(self, candles: Candles):
+    def __init__(self, candles: Union[Candles, List[Candles]]):
         self.candles = candles
+        self.is_multi = True if type(candles) is list and len(candles) > 1 \
+            else False
 
     def backtest(self) -> List[Position]:
         return NotImplementedError("Strategies must implement backtest")
