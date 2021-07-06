@@ -3,21 +3,75 @@ import yfinance as yf
 from candles import Candles
 from loguru import logger
 from strategies.SMACrossover import SMACrossover
-from strategies.strategy import Decision
+from strategies.strategy import Strategy, Trade, Side
+from typing import Type
 
 
 class Backtest:
 
-    def __init__(self, config: dict):
+    def __init__(self, config: dict, strategy_type: Type[Strategy]):
         self.config = config
+        self.strategy_type = strategy_type
         self.cash = config['initial_amount']
-        self.holdings = 0
+        self.position = 0.0
+        self.curr_trade: Trade = None
 
     def balance(self, asset_price):
-        return self.cash + self.holdings * asset_price
+        return self.cash + self.position * asset_price
+
+    def start_trade(self, trade, candles, idx):
+        assert not self.curr_trade
+        self.curr_trade = trade
+        asset_price = candles.close[idx]
+        # TODO: round number of units in real trading
+        num_units = self.cash / asset_price
+
+        if trade.side == Side.LONG:
+            self.position += num_units
+            self.cash = 0.0
+        elif trade.side == Side.SHORT:
+            self.position -= num_units
+            self.cash += self.cash
+
+    def end_trade(self, candles, idx):
+        stoploss = self.curr_trade.stoploss
+        take_profit = self.curr_trade.take_profit
+
+        # short and long conditions for execution
+        long_stoploss_cond = candles.low[idx] <= stoploss
+        long_take_profit_cond = candles.high[idx] >= take_profit
+        short_stoploss_cond = candles.high[idx] >= stoploss
+        short_take_profit_cond = candles.low[idx] <= take_profit
+
+        def _end_long(price):
+            self.cash += self.position * price
+            self.position = 0.0
+            logger.info(f"Selling asset at price {price}")
+            self.curr_trade = None
+
+        def _end_short(price):
+            self.cash += self.position * price
+            self.position = 0.0
+            logger.info(f"Buying asset at price {price}")
+            self.curr_trade = None
+
+        # end long trades
+        if self.curr_trade.side == Side.LONG:
+            if long_stoploss_cond:
+                _end_long(stoploss)
+            elif long_take_profit_cond:
+                _end_long(take_profit)
+
+        # end short trades
+        elif self.curr_trade.side == Side.SHORT:
+            if short_stoploss_cond:
+                _end_short(stoploss)
+            elif short_take_profit_cond:
+                _end_short(take_profit)
 
     def run(self):
         logger.info("Beginning backtest...")
+        logger.info(f"Initial amount: {self.cash}...")
 
         symbol = self.config['symbol']
         start = self.config['start']
@@ -27,34 +81,29 @@ class Backtest:
         # download data
         data = yf.download(symbol, start=start, end=end, interval=interval)
         candles = Candles(data)
-        logger.debug(f"Detected {len(candles)} ticks")
+        logger.info(f"Detected {len(candles)} ticks")
 
-        # strategy
-        strategy = SMACrossover(candles=candles)
-        positions = strategy.backtest()
-        non_hold = [p for p in positions if p.decision != Decision.HOLD]
-        logger.debug(f"Decided on {len(non_hold)} positions")
+        # run strategy
+        strategy = self.strategy_type(candles=candles)
+        trades = strategy.backtest()
+        non_hold = [t for t in trades if t]
+        logger.info(f"Decided on {len(non_hold)} trades")
 
-        # execute positions
-        for i, position in enumerate(positions):
-            asset_price = candles.close[i]
-            if position.decision == Decision.HOLD:
-                continue
-            if position.decision == Decision.BUY:
-                investment = position.amount * self.cash
-                self.cash -= investment
-                self.holdings += investment / asset_price
-                logger.info(f"Buying ${investment} of {symbol}")
-            elif position.decision == Decision.SELL:
-                sell_holdings = position.amount * self.holdings
-                self.cash += asset_price * sell_holdings
-                self.holdings -= sell_holdings
-                logger.info(f"Selling {sell_holdings:.4f} of {symbol}")
-            current_balance = self.balance(asset_price)
-            logger.info(f"Current balance: {current_balance}")
+        # end trades
+        for i, candle in enumerate(candles.data.iterrows()):
+            logger.info(f"Current balance: {self.balance(candles.close[i])} asset price: {candles.close[i]}")
+            # first check for current trade termination
+            if self.curr_trade:
+                self.end_trade(candles, i)
+            # if no active trade, register one
+            elif trades[i]:
+                logger.info("New trade registered")
+                logger.info(f"{trades[i]}")
+                self.start_trade(trades[i], candles, i)
 
 
 if __name__ == '__main__':
     config = json.load(open('./config.json'))
-    backtest = Backtest(config)
+    strategy_type = SMACrossover
+    backtest = Backtest(config, strategy_type)
     backtest.run()

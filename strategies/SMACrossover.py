@@ -1,4 +1,4 @@
-from strategies.strategy import Strategy, Position, Decision
+from strategies.strategy import Strategy, Trade, Side
 from indicators.SMA import SMA
 
 
@@ -15,20 +15,32 @@ class SMACrossover(Strategy):
         large_sma = SMA(candles=self.candles, period=self.large)
         large_sma_values = large_sma.indicator()
 
-        positions = []
+        trades = [None]
         is_small_higher = True
+        factor = 2
+        margin = 0.02
+
         for i in range(1, len(large_sma_values)):
+            trade = None
             is_current_small_higher = small_sma_values[i] > large_sma_values[i]
+            # detect a crossover
             if is_current_small_higher != is_small_higher:
                 trend = small_sma_values[i] - small_sma_values[i-1]
+                close = self.candles.close[i]
+                # if small sma is trending up, place a short
                 if trend > 0:
-                    position = Position(decision=Decision.SELL)
+                    side = Side.SHORT
+                    stoploss = (1 + margin / factor) * close
+                    take_profit = (1 - margin) * close
+                    trade = Trade(stoploss, take_profit, side)
                 else:
-                    position = Position(decision=Decision.BUY)
+                    # if small sma is trending down, place a long
+                    side = Side.LONG
+                    stoploss = (1 - margin / factor) * close
+                    take_profit = (1 + margin) * close
+                    trade = Trade(stoploss, take_profit, side)
                 is_small_higher = is_current_small_higher
-            else:
-                position = Position(decision=Decision.HOLD)
 
-            positions.append(position)
+            trades.append(trade)
 
-        return positions
+        return trades

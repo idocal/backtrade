@@ -4,18 +4,20 @@ from candles import Candles
 from typing import List, Union
 
 
-class Decision(Enum):
-    BUY = 1
-    HOLD = 0
-    SELL = -1
+class Side(Enum):
+    LONG = 1
+    SHORT = -1
 
 
 @dataclass
-class Position:
-    decision: Decision
-    stop_loss: float = 0.0
-    take_profit: float = 0.0
-    amount: float = 0.1
+class Trade:
+    stoploss: float
+    take_profit: float
+    side: Side = Side.LONG
+
+    def __repr__(self):
+        return f"{'LONG' if self.side == Side.LONG else 'SHORT'}\
+            (stoploss: {self.stoploss:.4f} take_profit: {self.take_profit:.4f})"
 
 
 class Strategy:
@@ -25,5 +27,5 @@ class Strategy:
         self.is_multi = True if type(candles) is list and len(candles) > 1 \
             else False
 
-    def backtest(self) -> List[Position]:
+    def backtest(self) -> List[Trade]:
         return NotImplementedError("Strategies must implement backtest")
