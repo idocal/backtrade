@@ -22,6 +22,7 @@ class SMACrossover(Strategy):
 
         for i in range(1, len(large_sma_values)):
             trade = None
+            date = self.candles.data.index[i].to_pydatetime()
             is_current_small_higher = small_sma_values[i] > large_sma_values[i]
             # detect a crossover
             if is_current_small_higher != is_small_higher:
@@ -32,13 +33,13 @@ class SMACrossover(Strategy):
                     side = Side.SHORT
                     stoploss = (1 + margin / factor) * close
                     take_profit = (1 - margin) * close
-                    trade = Trade(stoploss, take_profit, side)
+                    trade = Trade(stoploss, take_profit, date, side)
                 else:
                     # if small sma is trending down, place a long
                     side = Side.LONG
                     stoploss = (1 - margin / factor) * close
                     take_profit = (1 + margin) * close
-                    trade = Trade(stoploss, take_profit, side)
+                    trade = Trade(stoploss, take_profit, date, side)
                 is_small_higher = is_current_small_higher
 
             trades.append(trade)

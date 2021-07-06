@@ -5,6 +5,26 @@ from loguru import logger
 from strategies.SMACrossover import SMACrossover
 from strategies.strategy import Strategy, Trade, Side
 from typing import Type
+import plotly.graph_objects as go
+
+
+class Ledger:
+
+    def __init__(self):
+        self.trades = []
+        self.balances = []
+
+    def log_trade(self, trade: Trade):
+        self.trades.append(trade)
+
+    def log_balance(self, balance: float):
+        self.balances.append(balance)
+
+    def plot_balance(self):
+        fig = go.Figure()
+        x = [i for i in range(len(self.balances))]
+        fig.add_trace(go.Scatter(x=x, y=self.balances, fill='tozeroy'))
+        fig.show()
 
 
 class Backtest:
@@ -15,6 +35,7 @@ class Backtest:
         self.cash = config['initial_amount']
         self.position = 0.0
         self.curr_trade: Trade = None
+        self.ledger = Ledger()
 
     def balance(self, asset_price):
         return self.cash + self.position * asset_price
@@ -91,7 +112,10 @@ class Backtest:
 
         # end trades
         for i, candle in enumerate(candles.data.iterrows()):
-            logger.info(f"Current balance: {self.balance(candles.close[i])} asset price: {candles.close[i]}")
+            asset_price = candles.close[i]
+            balance = self.balance(candles.close[i])
+            logger.debug(f"Current balance: {balance}\tasset price: {asset_price}")
+            self.ledger.log_balance(balance)
             # first check for current trade termination
             if self.curr_trade:
                 self.end_trade(candles, i)
@@ -100,6 +124,8 @@ class Backtest:
                 logger.info("New trade registered")
                 logger.info(f"{trades[i]}")
                 self.start_trade(trades[i], candles, i)
+
+        self.ledger.plot_balance()
 
 
 if __name__ == '__main__':

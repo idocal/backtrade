@@ -2,6 +2,7 @@ from enum import Enum
 from dataclasses import dataclass
 from candles import Candles
 from typing import List, Union
+from datetime import datetime
 
 
 class Side(Enum):
@@ -13,6 +14,7 @@ class Side(Enum):
 class Trade:
     stoploss: float
     take_profit: float
+    date: datetime
     side: Side = Side.LONG
 
     def __repr__(self):
