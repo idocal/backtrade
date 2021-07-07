@@ -6,6 +6,7 @@ from strategies.SMACrossover import SMACrossover
 from strategies.strategy import Strategy, Trade, Side
 from typing import Type
 import plotly.graph_objects as go
+from datetime import datetime
 
 
 class Ledger:
@@ -13,18 +14,19 @@ class Ledger:
     def __init__(self):
         self.trades = []
         self.balances = []
+        self.dates = []
 
     def log_trade(self, trade: Trade):
         self.trades.append(trade)
 
-    def log_balance(self, balance: float):
+    def log_balance(self, balance: float, date: datetime):
         self.balances.append(balance)
+        self.dates.append(date)
 
     def plot_balance(self):
-        fig = go.Figure()
-        x = [i for i in range(len(self.balances))]
-        fig.add_trace(go.Scatter(x=x, y=self.balances, fill='tozeroy'))
-        fig.show()
+        f = go.Figure()
+        f.add_trace(go.Scatter(x=self.dates, y=self.balances, fill='tozeroy'))
+        f.show()
 
 
 class Backtest:
@@ -112,10 +114,9 @@ class Backtest:
 
         # end trades
         for i, candle in enumerate(candles.data.iterrows()):
-            asset_price = candles.close[i]
             balance = self.balance(candles.close[i])
-            logger.debug(f"Current balance: {balance}\tasset price: {asset_price}")
-            self.ledger.log_balance(balance)
+            date = candle[0].to_pydatetime()
+            self.ledger.log_balance(balance, date)
             # first check for current trade termination
             if self.curr_trade:
                 self.end_trade(candles, i)
