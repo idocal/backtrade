@@ -7,6 +7,7 @@ from strategies.strategy import Strategy, Trade, Side
 from typing import Type
 import plotly.graph_objects as go
 from datetime import datetime
+from tqdm import tqdm
 
 
 class Ledger:
@@ -69,7 +70,7 @@ class Backtest:
         def _end(price):
             self.cash += self.position * price
             self.position = 0.0
-            logger.info(f"Selling asset at price {price}")
+            # logger.info(f"Selling asset at price {price}")
             self.curr_trade = None
 
         # end long trades
@@ -107,7 +108,7 @@ class Backtest:
         logger.info(f"Decided on {len(non_hold)} trades")
 
         # end trades
-        for i, candle in enumerate(candles.data.iterrows()):
+        for i, candle in tqdm(enumerate(candles.data.iterrows())):
             balance = self.balance(candles.close[i])
             date = candle[0].to_pydatetime()
             self.ledger.log_balance(balance, date)
@@ -116,8 +117,8 @@ class Backtest:
                 self.end_trade(candles, i)
             # if no active trade, register one
             elif trades[i]:
-                logger.info("New trade registered")
-                logger.info(f"{trades[i]}")
+                # logger.info("New trade registered")
+                # logger.info(f"{trades[i]}")
                 self.start_trade(trades[i], candles, i)
 
         self.ledger.plot_balance()
