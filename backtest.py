@@ -66,31 +66,25 @@ class Backtest:
         short_stoploss_cond = candles.high[idx] >= stoploss
         short_take_profit_cond = candles.low[idx] <= take_profit
 
-        def _end_long(price):
+        def _end(price):
             self.cash += self.position * price
             self.position = 0.0
             logger.info(f"Selling asset at price {price}")
             self.curr_trade = None
 
-        def _end_short(price):
-            self.cash += self.position * price
-            self.position = 0.0
-            logger.info(f"Buying asset at price {price}")
-            self.curr_trade = None
-
         # end long trades
         if self.curr_trade.side == Side.LONG:
             if long_stoploss_cond:
-                _end_long(stoploss)
+                _end(stoploss)
             elif long_take_profit_cond:
-                _end_long(take_profit)
+                _end(take_profit)
 
         # end short trades
         elif self.curr_trade.side == Side.SHORT:
             if short_stoploss_cond:
-                _end_short(stoploss)
+                _end(stoploss)
             elif short_take_profit_cond:
-                _end_short(take_profit)
+                _end(take_profit)
 
     def run(self):
         logger.info("Beginning backtest...")

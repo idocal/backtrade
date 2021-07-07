@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib as plt
 import random
 import plotly.graph_objects as go
+import numpy as np
 
 
 class Candles:
@@ -41,6 +42,18 @@ class Candles:
 
     def random_color(self):
         return self.colors.pop(random.randrange(len(self.colors)))
+
+    def accumulate(self, k):
+        group = self.data.groupby(np.arange(len(self)) // k)
+        agg = {
+            'Open': 'first',
+            'High': 'max',
+            'Low': 'min',
+            'Close': 'last',
+            'Volume': 'sum'
+        }
+        data = group.agg(agg)
+        return Candles(data=data)
 
     def plot(self, indicators=[]):
         # plot candlesticks
