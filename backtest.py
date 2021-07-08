@@ -9,17 +9,30 @@ import plotly.graph_objects as go
 from datetime import datetime
 from tqdm import tqdm
 from data.query import get_ohlcv
+import pandas as pd
+
+
+class Report:
+
+    def __init__(self, agg: dict, trades: pd.DataFrame):
+        self.agg = agg
+        self.trades = trades
 
 
 class Ledger:
 
-    def __init__(self):
+    def __init__(self, initial_amount: float):
+        self.initial_amount = initial_amount
         self.trades = []
         self.balances = []
         self.dates = []
+        self.trade_points = []
+        self.positions = []
 
-    def log_trade(self, trade: Trade, idx):
+    def log_trade(self, trade: Trade, idx, position: float):
+        self.trade_points.append(idx)
         self.trades.append(trade)
+        self.positions.append(position)
 
     def log_balance(self, balance: float, date: datetime):
         self.balances.append(balance)
@@ -30,6 +43,50 @@ class Ledger:
         f.add_trace(go.Scatter(x=self.dates, y=self.balances, fill='tozeroy'))
         f.show()
 
+    def report(self):
+        # aggregated report
+        bs = self.balances
+        periodical_return = (self.balances[-1] - self.initial_amount) / self.initial_amount
+        max_drawdown = (max(bs) - min(bs)) / max(bs)
+        num_trades = len(self.trades)
+        win_trades_pct = len([t for t in self.trades if t.is_profitable])
+        agg = {
+            'Periodical Return': periodical_return,
+            'Max Drawdown': max_drawdown,
+            '# Trades': num_trades,
+            '% Win Trades': win_trades_pct
+        }
+
+        qtys = []
+        sides = []
+        exits = []
+        pls = []
+        dates = []
+        # per trade report
+        for i in range(len(self.trades)):
+            trade_point = self.trade_points[i]
+            trade = self.trades[i]
+            position = self.positions[i]
+            qty = self.balances[trade_point]
+            date = trade.date
+            side = 'long' if trade.side == Side.LONG else 'short'
+            sell_price = trade.take_profit if trade.is_profitable \
+                else trade.stoploss
+            sell_price *= position
+            pl = (sell_price - qty) / qty
+            if trade.side == Side.SHORT:
+                pl = (qty - sell_price) / qty
+            qtys.append(qty)
+            sides.append(side)
+            exits.append(sell_price)
+            pls.append(pl)
+            dates.append(date)
+
+        table = {'Date': dates, 'Qty': qtys, 'Side': sides, 'Exit': exits, 'P/L': pls}
+        df = pd.DataFrame.from_dict(table)
+        report = Report(agg, df)
+        return report
+
 
 class Backtest:
 
@@ -39,7 +96,7 @@ class Backtest:
         self.cash = config['initial_amount']
         self.position = 0.0
         self.curr_trade: Trade = None
-        self.ledger = Ledger()
+        self.ledger = Ledger(self.config['initial_amount'])
 
     def balance(self, asset_price):
         return self.cash + self.position * asset_price
@@ -58,7 +115,7 @@ class Backtest:
             self.position -= num_units
             self.cash += self.cash
 
-        self.ledger.log_trade(trade, idx)
+        self.ledger.log_trade(trade, idx, num_units)
 
     def end_trade(self, candles, idx):
         stoploss = self.curr_trade.stoploss
@@ -126,10 +183,11 @@ class Backtest:
                 self.start_trade(trades[i], candles, i)
 
         self.ledger.plot_balance()
+        return self.ledger.report()
 
 
 if __name__ == '__main__':
     config = json.load(open('./config.json'))
     strategy_type = SMACrossover
     backtest = Backtest(config, strategy_type)
-    backtest.run()
+    report = backtest.run()
