@@ -19,8 +19,8 @@ def get_ohlcv(asset: str, start: str, end: str, interval: str):
         raise AttributeError(f"Couldn't find table for {asset} and {interval}")
 
     # design query
-    q = f"SELECT * FROM {table_name} \
+    q = f"SELECT Timestamp, Open, High, Low, Close, Volume FROM {table_name} \
         WHERE Timestamp >= date('{start}') \
         AND Timestamp <= date('{end}')"
 
-    return pd.read_sql(q, conn)
+    return pd.read_sql(q, conn, index_col='Timestamp')

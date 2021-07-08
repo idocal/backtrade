@@ -22,7 +22,7 @@ class SMACrossover(Strategy):
 
         for i in range(1, len(large_sma_values)):
             trade = None
-            date = self.candles.data.index[i].to_pydatetime()
+            date = self.candles.data.index[i]
             is_current_small_higher = small_sma_values[i] > large_sma_values[i]
             # detect a crossover
             if is_current_small_higher != is_small_higher:

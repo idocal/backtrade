@@ -8,6 +8,7 @@ from typing import Type
 import plotly.graph_objects as go
 from datetime import datetime
 from tqdm import tqdm
+from data.query import get_ohlcv
 
 
 class Ledger:
@@ -17,7 +18,7 @@ class Ledger:
         self.balances = []
         self.dates = []
 
-    def log_trade(self, trade: Trade):
+    def log_trade(self, trade: Trade, idx):
         self.trades.append(trade)
 
     def log_balance(self, balance: float, date: datetime):
@@ -57,6 +58,8 @@ class Backtest:
             self.position -= num_units
             self.cash += self.cash
 
+        self.ledger.log_trade(trade, idx)
+
     def end_trade(self, candles, idx):
         stoploss = self.curr_trade.stoploss
         take_profit = self.curr_trade.take_profit
@@ -67,23 +70,24 @@ class Backtest:
         short_stoploss_cond = candles.high[idx] >= stoploss
         short_take_profit_cond = candles.low[idx] <= take_profit
 
-        def _end(price):
+        def _end(price, is_profitable=True):
             self.cash += self.position * price
             self.position = 0.0
+            self.curr_trade.is_profitable = is_profitable
             # logger.info(f"Selling asset at price {price}")
             self.curr_trade = None
 
         # end long trades
         if self.curr_trade.side == Side.LONG:
             if long_stoploss_cond:
-                _end(stoploss)
+                _end(stoploss, False)
             elif long_take_profit_cond:
                 _end(take_profit)
 
         # end short trades
         elif self.curr_trade.side == Side.SHORT:
             if short_stoploss_cond:
-                _end(stoploss)
+                _end(stoploss, False)
             elif short_take_profit_cond:
                 _end(take_profit)
 
@@ -97,7 +101,7 @@ class Backtest:
         interval = self.config['interval']
 
         # download data
-        data = yf.download(symbol, start=start, end=end, interval=interval)
+        data = get_ohlcv(symbol, start=start, end=end, interval=interval)
         candles = Candles(data)
         logger.info(f"Detected {len(candles)} ticks")
 
@@ -110,7 +114,7 @@ class Backtest:
         # end trades
         for i, candle in tqdm(enumerate(candles.data.iterrows())):
             balance = self.balance(candles.close[i])
-            date = candle[0].to_pydatetime()
+            date = candle[0]
             self.ledger.log_balance(balance, date)
             # first check for current trade termination
             if self.curr_trade:

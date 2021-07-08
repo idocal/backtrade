@@ -16,6 +16,7 @@ class Trade:
     take_profit: float
     date: datetime
     side: Side = Side.LONG
+    is_profitable = None
 
     def __repr__(self):
         return f"{'LONG' if self.side == Side.LONG else 'SHORT'}\
