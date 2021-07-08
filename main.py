@@ -1,5 +1,4 @@
 import json
-import yfinance as yf
 from candles import Candles
 from indicators.SMA import SMA
 from indicators.RSI import RSI

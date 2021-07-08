@@ -5,11 +5,19 @@ import pandas as pd
 from sqlalchemy import create_engine
 from loguru import logger
 from datetime import datetime
+import argparse
 
 
 if __name__ == '__main__':
+    # parse user arguments
+    parser = argparse.ArgumentParser(description='Download Binance data')
+    parser.add_argument('-c', '--coins', type=str, nargs='+',
+                        help='List of coins to download')
+    args = parser.parse_args()
+
+    # define basic parameters to download
     BASE_URL = 'https://data.binance.vision/data/spot/monthly/klines'
-    symbols = [
+    all_symbols = [
         'BTC',
         'ETH',
         'ETC',
@@ -17,6 +25,7 @@ if __name__ == '__main__':
         'XRP',
         'LTC'
     ]
+    symbols = args.coins if args.coins else all_symbols
     intervals = ['1m', '5m', '15m', '1h', '4h', '1d']
     today = datetime.today()
     years = [i for i in range(2019, today.year + 1)]
@@ -24,6 +33,7 @@ if __name__ == '__main__':
     db_name = 'ohlcv'
     symbols_usdt = [s + 'USDT' for s in symbols]
 
+    # download and index data in loop
     logger.info(f"Importing data of coins: {symbols}")
     for i in range(len(symbols)):
         logger.info(f"Coin {i+1}/{len(symbols)}")
