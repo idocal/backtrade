@@ -1,5 +1,5 @@
 {
-    "symbol": "BTC-USD",
+    "symbol": "BTC",
     "start": "2020-01-01",
     "end": "2021-01-01",
     "interval": "1h",

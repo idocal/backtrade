@@ -3,6 +3,7 @@ import yfinance as yf
 from candles import Candles
 from indicators.SMA import SMA
 from indicators.RSI import RSI
+from data.query import get_ohlcv
 
 if __name__ == '__main__':
     # configuration
@@ -13,7 +14,8 @@ if __name__ == '__main__':
     interval = config['interval']
 
     # download data
-    data = yf.download(symbol, start=start, end=end, interval=interval)
+    # data = yf.download(symbol, start=start, end=end, interval=interval)
+    data = get_ohlcv(symbol, start, end, interval)
 
     # candle
     candles = Candles(data)
