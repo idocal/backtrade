@@ -1,5 +1,4 @@
 import json
-import yfinance as yf
 from candles import Candles
 from loguru import logger
 from strategies.SMACrossover import SMACrossover
@@ -97,6 +96,7 @@ class Backtest:
         self.position = 0.0
         self.curr_trade: Trade = None
         self.ledger = Ledger(self.config['initial_amount'])
+        self.commission = config.get('commission', 0)
 
     def balance(self, asset_price):
         return self.cash + self.position * asset_price
@@ -129,6 +129,7 @@ class Backtest:
 
         def _end(price, is_profitable=True):
             self.cash += self.position * price
+            self.cash -= self.commission * price
             self.position = 0.0
             self.curr_trade.is_profitable = is_profitable
             # logger.info(f"Selling asset at price {price}")
@@ -169,7 +170,7 @@ class Backtest:
         logger.info(f"Decided on {len(non_hold)} trades")
 
         # end trades
-        for i, candle in tqdm(enumerate(candles.data.iterrows())):
+        for i, candle in enumerate(tqdm(candles.data.iterrows())):
             balance = self.balance(candles.close[i])
             date = candle[0]
             self.ledger.log_balance(balance, date)
