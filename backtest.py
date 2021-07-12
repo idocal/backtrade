@@ -107,6 +107,7 @@ class Backtest:
         asset_price = candles.close[idx]
         # TODO: round number of units in real trading
         num_units = self.cash / asset_price
+        commission = self.comission * self.cash
 
         if trade.side == Side.LONG:
             self.position += num_units
@@ -114,6 +115,7 @@ class Backtest:
         elif trade.side == Side.SHORT:
             self.position -= num_units
             self.cash += self.cash
+        self.cash -= commission
 
         self.ledger.log_trade(trade, idx, num_units)
 
@@ -128,8 +130,9 @@ class Backtest:
         short_take_profit_cond = candles.low[idx] <= take_profit
 
         def _end(price, is_profitable=True):
-            self.cash += self.position * price
-            self.cash -= self.commission * price
+            gain = self.position * price
+            self.cash += gain
+            self.cash -= self.commission * gain
             self.position = 0.0
             self.curr_trade.is_profitable = is_profitable
             # logger.info(f"Selling asset at price {price}")
