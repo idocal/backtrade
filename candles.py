@@ -3,18 +3,39 @@ import matplotlib as plt
 import random
 import plotly.graph_objects as go
 import numpy as np
+from datetime import datetime
+from dataclasses import dataclass
+
+
+@dataclass
+class Candle:
+
+    open: float
+    high: float
+    low: float
+    close: float
+    volume: int
+    timestamp: datetime
 
 
 class Candles:
 
-    def __init__(self, data: pd.DataFrame):
-        required_columns = ['Open', 'High', 'Low', 'Close', 'Volume']
-        assert all([col in data.columns for col in required_columns])
+    def __init__(self, data: pd.DataFrame = None):
+        self.cols = ['Open', 'High', 'Low', 'Close', 'Volume']
+        self.index = 'Date'
+
+        if not data:
+            data = pd.DataFrame(columns=self.cols)
+
+        assert all([col in data.columns for col in self.cols])
         self._data = data
         self.colors = [h for name, h in plt.colors.cnames.items()]
 
     def __len__(self):
         return len(self.data)
+
+    def __repr__(self):
+        return self.data.__repr__
 
     @property
     def open(self) -> pd.Series:
@@ -39,6 +60,11 @@ class Candles:
     @property
     def data(self) -> pd.DataFrame:
         return self._data
+
+    def add(self, _date: datetime, _open, _high, _low, _close, _volume):
+        data = [[_date, _open, _high, _low, _close, _volume]]
+        row = pd.DataFrame(data, columns=self.cols, index=[_date])
+        self._data = self._data.append(row)
 
     def random_color(self):
         return self.colors.pop(random.randrange(len(self.colors)))
