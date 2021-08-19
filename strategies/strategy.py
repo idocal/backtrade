@@ -1,8 +1,5 @@
 from enum import Enum
-from dataclasses import dataclass
-from candles import Candles, Candle
-from typing import List, Union
-from datetime import datetime
+from candles import Candle
 
 
 class Decision(Enum):
@@ -10,32 +7,24 @@ class Decision(Enum):
     LONG = 1
     SHORT = 2
     PULL = 3
+    STOPLOSS = 4
+    TAKE_PROFIT = 5
 
-
-class Side(Enum):
-    LONG = 1
-    SHORT = -1
-
-
-@dataclass
-class Trade:
-    stoploss: float
-    take_profit: float
-    date: datetime
-    side: Side = Side.LONG
-    is_profitable = None
-
-    def __repr__(self):
-        return f"{'LONG' if self.side == Side.LONG else 'SHORT'}(\
-            stoploss: {self.stoploss:.4f} take_profit: {self.take_profit:.4f})"
+    def __str__(self):
+        d = {
+            0: 'hold',
+            1: 'long',
+            2: 'short',
+            3: 'pull',
+            4: 'stoploss',
+            5: 'take profit'
+        }
+        return d[self.value]
 
 
 class Strategy:
 
-    def __init__(self, candles: Union[Candles, List[Candles]] = None):
-        self.candles = candles
-        self.is_multi = True if type(candles) is list and len(candles) > 1 \
-            else False
+    def __init__(self):
         self.stoploss = None
         self.take_profit = None
 
@@ -47,23 +36,25 @@ class Strategy:
 
     def _next(self, candle: Candle) -> Decision:
         decision = None
-        sl_condition = self.stoploss and candle.close <= self.stoploss
-        tp_condition = self.take_profit and candle.close >= self.take_profit
+        sl_condition = self.stoploss is not None \
+            and candle.close <= self.stoploss
+        tp_condition = self.take_profit is not None \
+            and candle.close >= self.take_profit
 
         if sl_condition or tp_condition:
-            decision = Decision.PULL
-            self.set_stoploss(None)
-            self.set_take_profit(None)
+            if sl_condition:
+                decision = Decision.STOPLOSS
+            else:
+                decision = Decision.TAKE_PROFIT
 
         return decision
 
     def process(self, candle: Candle) -> Decision:
         preprocess = self._next(candle)
         decision = self.next(candle)
-        return preprocess if preprocess else decision
+        if preprocess is not None:
+            return preprocess
+        return decision
 
     def next(self, candle: Candle) -> Decision:
         return NotImplementedError("Strategies must implement next")
-
-    def backtest(self) -> List[Trade]:
-        return NotImplementedError("Strategies must implement backtest")

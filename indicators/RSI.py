@@ -1,22 +1,21 @@
 from indicators.indicator import Indicator
 import numpy as np
-import talib
+from talib import stream
 
 
 class RSI(Indicator):
 
-    def __init__(self, candles, period, param='Close'):
-        super().__init__(candles)
-        self.num_ticks = len(candles)
-        assert period <= self.num_ticks
+    def __init__(self, period, param='Close'):
         assert param in ['Open', 'High', 'Low', 'Close', 'Volume']
         self.period = period
         self.param = param
+        self.values = np.array([], dtype='float64')
 
     @property
     def name(self):
         return f'{self.period} RSI'
 
-    def indicator(self) -> np.ndarray:
-        data = self.candles.data[self.param].to_numpy()
-        return talib.RSI(data, timeperiod=self.period)
+    def next(self, candle):
+        value = candle.__dict__[self.param.lower()]
+        self.values = np.append(self.values, value)
+        return stream.RSI(self.values, timeperiod=self.period)

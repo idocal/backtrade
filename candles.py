@@ -17,6 +17,17 @@ class Candle:
     volume: int
     timestamp: datetime
 
+    def from_df(df_row: pd.Series):
+        timestamp = datetime.fromisoformat(df_row.name)
+        return Candle(
+            open=df_row['Open'],
+            high=df_row['High'],
+            low=df_row['Low'],
+            close=df_row['Close'],
+            volume=df_row['Volume'],
+            timestamp=timestamp
+        )
+
 
 class Candles:
 
@@ -24,7 +35,7 @@ class Candles:
         self.cols = ['Open', 'High', 'Low', 'Close', 'Volume']
         self.index = 'Date'
 
-        if not data:
+        if data is None:
             data = pd.DataFrame(columns=self.cols)
 
         assert all([col in data.columns for col in self.cols])

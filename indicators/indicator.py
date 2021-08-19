@@ -1,15 +1,14 @@
-import numpy as np
-from candles import Candles
+from candles import Candle
 
 
 class Indicator:
-
-    def __init__(self, candles: Candles):
-        self.candles = candles
 
     @property
     def name(self):
         return 'Indicator'
 
-    def indicator(self) -> np.ndarray:
+    def next(self, candle):
         raise NotImplementedError()
+
+    def __call__(self, candle: Candle):
+        return self.next(candle)
