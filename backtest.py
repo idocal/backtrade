@@ -19,6 +19,7 @@ class Trade:
     num_units: float
     trigger_start: Decision
     idx: int
+    commission: float
     end: datetime = None
     price_end: float = None
     trigger_end: Decision = None
@@ -65,14 +66,6 @@ class Ledger:
                                Decision.TAKE_PROFIT])
         profitable = len([t for t in self.trades if t.price_end - t.price_start
                           > 0])
-        agg = {
-            'Periodical Return': periodical_return,
-            'Max Drawdown': max_drawdown,
-            '# Trades': num_trades,
-            'Stoploss': num_stoploss,
-            'Take Profit': num_take_profit,
-            'Profitable Trades': profitable
-        }
 
         start_dates = [t.start for t in self.trades]
         price_starts = [t.price_start for t in self.trades]
@@ -82,11 +75,23 @@ class Ledger:
         price_ends = [t.price_end for t in self.trades]
         trigger_ends = [str(t.trigger_end) for t in self.trades]
         trade_balances = [self.balances[t.idx] for t in self.trades]
+        commissions = [t.commission for t in self.trades]
 
         table = {'Start Date': start_dates, 'Price Start': price_starts,
                  'Price End': price_ends, 'Trigger Start': trigger_starts,
                  'Trigger End': trigger_ends, 'Position': positions,
-                 'End Date': end_dates, 'Balance': trade_balances}
+                 'End Date': end_dates, 'Balance': trade_balances,
+                 'Commission': commissions}
+
+        agg = {
+            'Periodical Return': periodical_return,
+            'Max Drawdown': max_drawdown,
+            '# Trades': num_trades,
+            'Stoploss': num_stoploss,
+            'Take Profit': num_take_profit,
+            'Profitable Trades': profitable,
+            'Commission': sum(commissions)
+        }
         df = pd.DataFrame.from_dict(table)
         report = Report(agg, df)
         return report
@@ -113,14 +118,15 @@ class Backtest:
         asset_price = candle.close
         # TODO: round number of units in real trading
         num_units = self.cash / asset_price
+        commission = self.commission * self.cash
         self.curr_trade = Trade(
             start=candle.timestamp,
             price_start=asset_price,
             num_units=num_units,
             trigger_start=decision,
-            idx=idx
+            idx=idx,
+            commission=commission
         )
-        commission = self.commission * self.cash
 
         if decision == Decision.LONG:
             self.position += num_units
@@ -137,14 +143,16 @@ class Backtest:
         # perform trade exit
         price = candle.close
         gain = self.position * price
+        commission = self.commission * gain
         self.cash += gain
-        self.cash -= self.commission * gain
+        self.cash -= commission
         self.position = 0.0
 
         # log trade
         self.curr_trade.end = candle.timestamp
         self.curr_trade.price_end = candle.close
         self.curr_trade.trigger_end = decision
+        self.curr_trade.commission += commission
         self.ledger.log_trade(self.curr_trade)
 
         # reset for next trade
