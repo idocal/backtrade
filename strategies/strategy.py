@@ -41,11 +41,10 @@ class Strategy:
         tp_condition = self.take_profit is not None \
             and candle.close >= self.take_profit
 
-        if sl_condition or tp_condition:
-            if sl_condition:
-                decision = Decision.STOPLOSS
-            else:
-                decision = Decision.TAKE_PROFIT
+        if sl_condition:
+            decision = Decision.STOPLOSS
+        elif tp_condition:
+            decision = Decision.TAKE_PROFIT
 
         return decision
 

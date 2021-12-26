@@ -1,11 +1,11 @@
+from constants import *
 import pandas as pd
 from sqlalchemy import create_engine, MetaData
 
 
 def get_ohlcv(asset: str, start: str, end: str, interval: str):
-    intervals = ['1m', '5m', '5m', '15m', '1h', '4h', '1d']
-    if interval not in intervals:
-        raise AttributeError(f"interval {interval} not in {intervals}")
+    if interval not in INTERVALS:
+        raise AttributeError(f"interval {interval} not in {INTERVALS}")
 
     # create SQLite connection
     conn = create_engine('sqlite:///ohlcv.db')

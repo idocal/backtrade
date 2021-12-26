@@ -1,3 +1,4 @@
+from constants import *
 from io import BytesIO
 from zipfile import ZipFile
 from urllib.request import urlopen
@@ -17,18 +18,9 @@ if __name__ == '__main__':
 
     # define basic parameters to download
     BASE_URL = 'https://data.binance.vision/data/spot/monthly/klines'
-    all_symbols = [
-        'BTC',
-        'ETH',
-        'ETC',
-        'BNB',
-        'XRP',
-        'LTC'
-    ]
-    symbols = args.coins if args.coins else all_symbols
-    intervals = ['1m', '5m', '15m', '1h', '4h', '1d']
+    symbols = args.coins if args.coins else SYMBOLS
     today = datetime.today()
-    years = [i for i in range(2019, today.year + 1)]
+    years = [i for i in range(2021, today.year + 1)]
     months = [i for i in range(1, 13)]
     db_name = 'ohlcv'
     symbols_usdt = [s + 'USDT' for s in symbols]
@@ -38,7 +30,7 @@ if __name__ == '__main__':
     for i in range(len(symbols)):
         logger.info(f"Coin {i+1}/{len(symbols)}")
         s = symbols_usdt[i]
-        for interval in intervals:
+        for interval in INTERVALS:
             for year in years:
                 for month in months:
                     # skip future months
@@ -58,7 +50,8 @@ if __name__ == '__main__':
                     zf = ZipFile(BytesIO(resp.read()))
 
                     # read csv file in zip
-                    df = pd.read_csv(zf.open(csv_filename, header=None))
+                    df = pd.read_csv(zf.open(csv_filename))
+                    # df = pd.read_csv(zf.open(csv_filename, header=None))
                     df.drop(df.columns[6:], axis=1, inplace=True)
                     df.columns = ['Timestamp',
                                   'Open',

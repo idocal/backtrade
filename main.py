@@ -2,7 +2,7 @@ import json
 from candles import Candles
 from indicators.SMA import SMA
 from indicators.RSI import RSI
-from data.query import get_ohlcv
+from query import get_ohlcv
 
 if __name__ == '__main__':
     # configuration

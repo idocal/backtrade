@@ -2,12 +2,13 @@ import json
 from candles import Candles, Candle
 from loguru import logger
 from strategies.ATRStrategy import ATRStrategy
+# from strategies.SMACrossover import SMACrossover
 from strategies.strategy import Strategy, Decision
 from typing import Type
 import plotly.graph_objects as go
 from datetime import datetime
 from tqdm import tqdm
-from data.query import get_ohlcv
+from query import get_ohlcv
 import pandas as pd
 from dataclasses import dataclass
 
