@@ -2,7 +2,7 @@ import json
 from candles import Candles, Candle
 from loguru import logger
 from strategies.ATRStrategy import ATRStrategy
-# from strategies.SMACrossover import SMACrossover
+from strategies.SMACrossover import SMACrossover
 from strategies.strategy import Strategy, Decision
 from typing import Type
 import plotly.graph_objects as go
@@ -197,6 +197,6 @@ class Backtest:
 
 if __name__ == '__main__':
     config = json.load(open('./config.json'))
-    strategy_type = ATRStrategy
+    strategy_type = SMACrossover
     backtest = Backtest(config, strategy_type)
     report = backtest.run()
