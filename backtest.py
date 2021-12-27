@@ -106,7 +106,7 @@ class Backtest:
         self.strategy = strategy_type()
         self.cash = config['initial_amount']
         self.position = 0.0
-        self.curr_trade: Decision = None
+        self.curr_trade: Trade = None
         self.ledger = Ledger(self.config['initial_amount'])
         self.commission = config.get('commission', 0)
 

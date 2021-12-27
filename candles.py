@@ -48,6 +48,10 @@ class Candles:
     def __repr__(self):
         return self.data.__repr__
 
+    def __iter__(self):
+        for i in range(len(self.data)):
+            yield Candle.from_df(self.data.iloc[i])
+
     @property
     def open(self) -> pd.Series:
         return self.data['Open']
@@ -103,7 +107,7 @@ class Candles:
 
         # add indicators on top
         for indicator in indicators:
-            values = indicator.indicator()
+            values = [indicator.next(c) for c in self]
             color = self.random_color()
             line = go.Scatter(x=self.data.index,
                               y=values,

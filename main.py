@@ -20,7 +20,7 @@ if __name__ == '__main__':
     candles = Candles(data)
 
     # indicator
-    sma100 = SMA(candles=candles, period=100)
-    sma200 = SMA(candles=candles, period=200)
-    rsi100 = RSI(candles=candles, period=100)
+    sma100 = SMA(period=100)
+    sma200 = SMA(period=200)
+    rsi100 = RSI(period=100)
     candles.plot(indicators=[sma100, sma200, rsi100])

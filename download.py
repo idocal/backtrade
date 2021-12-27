@@ -51,7 +51,6 @@ if __name__ == '__main__':
 
                     # read csv file in zip
                     df = pd.read_csv(zf.open(csv_filename))
-                    # df = pd.read_csv(zf.open(csv_filename, header=None))
                     df.drop(df.columns[6:], axis=1, inplace=True)
                     df.columns = ['Timestamp',
                                   'Open',
