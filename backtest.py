@@ -100,10 +100,9 @@ class Ledger:
 
 class Backtest:
 
-    def __init__(self, config: dict, strategy_type: Type[Strategy]):
+    def __init__(self, config: dict, strategy: Strategy):
         self.config = config
-        self.strategy_type = strategy_type
-        self.strategy = strategy_type()
+        self.strategy = strategy
         self.cash = config['initial_amount']
         self.position = 0.0
         self.curr_trade: Trade = None
@@ -197,6 +196,6 @@ class Backtest:
 
 if __name__ == '__main__':
     config = json.load(open('./config.json'))
-    strategy_type = SMACrossover
-    backtest = Backtest(config, strategy_type)
+    strategy = ATRStrategy()
+    backtest = Backtest(config, strategy)
     report = backtest.run()
