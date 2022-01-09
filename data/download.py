@@ -1,3 +1,4 @@
+import time
 from io import BytesIO
 from zipfile import ZipFile
 from urllib.request import urlopen
@@ -6,6 +7,31 @@ from sqlalchemy import create_engine
 from loguru import logger
 from datetime import datetime
 import argparse
+from typing import List
+
+
+def timestamp_from_str(date: str) -> datetime:
+    date = time.strptime(date, '%m-%Y')
+    date = time.struct_time(date)
+    date = time.mktime(date)
+    return datetime.fromtimestamp(date)
+
+
+def months_from_range(start_time, end_time) -> List[str]:
+    curr_year = start_time.year
+    curr_start_month = start_time.month
+    months = []
+    is_last_year = False
+    while not is_last_year:
+        is_last_year = curr_year == end_time.year
+        last_month = end_time.month if is_last_year else 12
+        for i in range(curr_start_month, last_month + 1):
+            month = '0' + str(i) if i < 10 else i
+            months.append(f"{month}-{curr_year}")
+        curr_year += 1
+        curr_start_month = 1
+
+    return months
 
 
 if __name__ == '__main__':
@@ -13,6 +39,12 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Download Binance data')
     parser.add_argument('-c', '--coins', type=str, nargs='+',
                         help='List of coins to download')
+    parser.add_argument('-i' '--interval', type=str,
+                        help='Interval between each tick')
+    parser.add_argument('-s', '--start', type=str,
+                        help='Start day of trade, format is MM-YYYY')
+    parser.add_argument('-e', '--end', type=str,
+                        help='End day of trade, format is MM-YYYY')
     args = parser.parse_args()
 
     # define basic parameters to download
@@ -25,10 +57,14 @@ if __name__ == '__main__':
         'XRP',
         'LTC'
     ]
+    all_intervals = ['1m', '5m', '15m', '1h', '4h', '1d']
+
+    intervals = [args.interval] if args.interval else all_intervals
     symbols = args.coins if args.coins else all_symbols
-    intervals = ['1m', '5m', '15m', '1h', '4h', '1d']
-    today = datetime.today()
-    years = [i for i in range(2019, today.year + 1)]
+    start_time = timestamp_from_str(args.start_time)
+    end_time = timestamp_from_str(args.end_time)
+
+    years = [i for i in range(start_time.year, end_time.year + 1)]
     months = [i for i in range(1, 13)]
     db_name = 'ohlcv'
     symbols_usdt = [s + 'USDT' for s in symbols]
