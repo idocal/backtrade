@@ -39,7 +39,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Download Binance data')
     parser.add_argument('-c', '--coins', type=str, nargs='+',
                         help='List of coins to download')
-    parser.add_argument('-i' '--interval', type=str,
+    parser.add_argument('-i', '--interval', type=str,
                         help='Interval between each tick')
     parser.add_argument('-s', '--start', type=str,
                         help='Start day of trade, format is MM-YYYY')
@@ -61,8 +61,9 @@ if __name__ == '__main__':
 
     intervals = [args.interval] if args.interval else all_intervals
     symbols = args.coins if args.coins else all_symbols
-    start_time = timestamp_from_str(args.start_time)
-    end_time = timestamp_from_str(args.end_time)
+    start_time = timestamp_from_str(args.start)
+    end_time = timestamp_from_str(args.end)
+    data_months = months_from_range(start_time, end_time)
 
     years = [i for i in range(start_time.year, end_time.year + 1)]
     months = [i for i in range(1, 13)]
@@ -75,39 +76,35 @@ if __name__ == '__main__':
         logger.info(f"Coin {i+1}/{len(symbols)}")
         s = symbols_usdt[i]
         for interval in intervals:
-            for year in years:
-                for month in months:
-                    # skip future months
-                    if month >= today.month and year >= today.year:
-                        continue
-                    month = '0' + str(month) if month < 10 else month
+            for data_month in data_months:
+                month, year = data_month.split("-")
 
-                    # define binance url
-                    filename = f'{s}-{interval}-{year}-{month}'
-                    url = f'{BASE_URL}/{s}/{interval}/{filename}.zip'
-                    csv_filename = f'{filename}.csv'
-                    table_name = f'{symbols[i]}{interval}'
-                    logger.info(f"Reading from url: {url}")
+                # define binance url
+                filename = f'{s}-{interval}-{year}-{month}'
+                url = f'{BASE_URL}/{s}/{interval}/{filename}.zip'
+                csv_filename = f'{filename}.csv'
+                table_name = f'{symbols[i]}{interval}'
+                logger.info(f"Reading from url: {url}")
 
-                    # retrieve zip file from binance
-                    resp = urlopen(url)
-                    zf = ZipFile(BytesIO(resp.read()))
+                # retrieve zip file from binance
+                resp = urlopen(url)
+                zf = ZipFile(BytesIO(resp.read()))
 
-                    # read csv file in zip
-                    df = pd.read_csv(zf.open(csv_filename, header=None))
-                    df.drop(df.columns[6:], axis=1, inplace=True)
-                    df.columns = ['Timestamp',
-                                  'Open',
-                                  'High',
-                                  'Low',
-                                  'Close',
-                                  'Volume']
+                # read csv file in zip
+                df = pd.read_csv(zf.open(csv_filename), header=None)
+                df.drop(df.columns[6:], axis=1, inplace=True)
+                df.columns = ['Timestamp',
+                              'Open',
+                              'High',
+                              'Low',
+                              'Close',
+                              'Volume']
 
-                    # convert unix timestamp to datetime
-                    df['Timestamp'] = df['Timestamp'].apply(
-                        lambda t: datetime.utcfromtimestamp(t / 1000))
+                # convert unix timestamp to datetime
+                df['Timestamp'] = df['Timestamp'].apply(
+                    lambda t: datetime.utcfromtimestamp(t / 1000))
 
-                    # index in sqlite
-                    engine = create_engine(f'sqlite:///{db_name}.db')
-                    logger.info(f"Writing to database: {db_name} table: {table_name}")
-                    df.to_sql(table_name, con=engine, if_exists='append')
+                # index in sqlite
+                engine = create_engine(f'sqlite:///{db_name}.db')
+                logger.info(f"Writing to database: {db_name} table: {table_name}")
+                df.to_sql(table_name, con=engine, if_exists='append')
