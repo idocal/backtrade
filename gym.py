@@ -1,6 +1,5 @@
 import gym
 from gym import spaces
-from strategies.strategy import Decision
 from backtest import Ledger, Trade
 from enum import Enum
 from data.query import get_ohlcv
@@ -31,7 +30,7 @@ class SingleAssetEnv(gym.Env):
         self.cash = config['initial_amount']
         self.position = 0.0
         self.balance = self.cash
-        self.curr_trade: Decision = None
+        self.curr_trade: Trade = None
         self.ledger = Ledger(self.config['initial_amount'])
         self.commission = config.get('commission', 0)
         self.step_idx = 0
