@@ -4,3 +4,5 @@ __pycache__
 *.ipynb
 *.db
 .env
+.idea
+*.zip
