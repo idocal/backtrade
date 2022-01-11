@@ -1,4 +1,5 @@
 import gym
+import numpy as np
 from gym import spaces
 from backtest import Ledger, Trade
 from enum import Enum
@@ -40,7 +41,7 @@ class SingleAssetEnv(gym.Env):
                             interval=self.config['interval'])
         n_actions = len(Action)
         self.action_space = spaces.Discrete(n_actions)
-        self.observation_space = spaces.Box(shape=(5,))  # OHLCV
+        self.observation_space = spaces.Box(shape=(6,))  # OHLCV + is_trading
 
     def balance(self, asset_price):
         return self.cash + self.position * asset_price
@@ -96,6 +97,8 @@ class SingleAssetEnv(gym.Env):
         reward = self.balance() - self.curr_balance
         self.curr_balance = balance
         observation = candle.as_array()
+        is_trading = 0 if self.curr_trade is None else 1
+        observation = np.append(observation, is_trading)
         done = self.step_idx == len(self.df)
         info = {}
 
