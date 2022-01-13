@@ -1,8 +1,10 @@
 import pandas as pd
 from sqlalchemy import create_engine, MetaData
+from loguru import logger
 
 
 def get_ohlcv(asset: str, start: str, end: str, interval: str):
+    logger.info(f"Fetching data for {asset}...")
     intervals = ['1m', '5m', '15m', '1h', '4h', '1d']
     if interval not in intervals:
         raise AttributeError(f"interval {interval} not in {intervals}")
@@ -23,4 +25,5 @@ def get_ohlcv(asset: str, start: str, end: str, interval: str):
         WHERE Timestamp >= date('{start}') \
         AND Timestamp <= date('{end}')"
 
+    logger.info("Done reading data!")
     return pd.read_sql(q, conn, index_col='Timestamp')

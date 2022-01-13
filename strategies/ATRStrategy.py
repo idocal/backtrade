@@ -48,7 +48,7 @@ class ATRStrategy(Strategy):
         # perform LONG when conditions meet
         if condition:
             stoploss = candle.low
-            take_profit = candle.high + atr_all * 10
+            take_profit = candle.high
             if not self.stoploss:
                 self.set_stoploss(stoploss)
             if not self.take_profit:

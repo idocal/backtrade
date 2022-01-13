@@ -17,6 +17,7 @@ class Candle:
     volume: int
     timestamp: datetime
 
+    @staticmethod
     def from_df(df_row: pd.Series):
         timestamp = datetime.fromisoformat(df_row.name)
         return Candle(
@@ -27,6 +28,10 @@ class Candle:
             volume=df_row['Volume'],
             timestamp=timestamp
         )
+
+    def as_array(self):
+        return np.array([self.open, self.high, self.low, self.close,
+                         self.volume]).astype(np.float32)
 
 
 class Candles:
