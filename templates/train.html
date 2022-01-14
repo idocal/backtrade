@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Trainer</title>
+</head>
+<body>
+
+<form action="{{url_for('handle_results')}}" method="post">
+
+Agent: <select name="agent" id="agent">
+<option value="DQN" selected="selected">Single Asset DQN</option>
+</select>
+<br><br>
+
+Symbol: <select name="symbol" id="symbol">
+<option value="BTC">BTC</option>
+<option value="ETH">ETH</option>
+</select>
+<br><br>
+
+Interval: <select name="interval" id="interval">
+<option value="4h">4h</option>
+<option value="1d">1d</option>
+</select>
+<br><br>
+
+<label for="start">Start date:</label>
+<input type="date" id="start" name="start"
+       value="{{request.form['start']}}"
+       min="2015-01-01" max="2018-12-31">
+<br><br>
+
+<label for="end">End date:</label>
+<input type="date" id="end" name="end"
+       value="{{request.form['end']}}"
+       min="2015-01-01" max="2018-12-31">
+
+<br><br>
+
+<label for="initial_amount">Initial amount (100-10000):</label>
+<input type="number" step="any" id="initial_amount" name="initial_amount"
+       value="{{request.form['initial_amount']}}"
+       min="100" max="10000">
+<br><br>
+
+<label for="commission">Commission (0-1):</label>
+<input type="number"  step="0.001" id="commission" name="commission"
+       value="{{request.form['commission']}}"
+       min="0" max="1">
+<br><br>
+
+<label for="timesteps">Timesteps (1-10):</label>
+<input type="number" step="1" id="timesteps" name="timesteps"
+       value="{{request.form['timesteps']}}"
+       min="1" max="10">
+<br><br>
+
+<input type="submit" value="Train">
+
+</form>
+
+</body>
+</html>

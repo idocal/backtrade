@@ -1,9 +1,10 @@
 from agent import *
 from gym_env import SingleAssetEnv, sample_config
 from data.download import download
-
+from callbacks import *
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.callbacks import EvalCallback
+from loguru import logger
 
 
 class SingleTrainer:
@@ -13,8 +14,8 @@ class SingleTrainer:
         start: str,
         end: str,
         interval: str,
-        initial_amount: int,
-        commission: int,
+        initial_amount: float,
+        commission: float,
     ):
         self.env_type = None
         self.agent_type = None
@@ -86,8 +87,8 @@ class SingleDQNTrainer(SingleTrainer):
         start: str,
         end: str,
         interval: str,
-        initial_amount: int,
-        commission: int = 0,
+        initial_amount: float,
+        commission: float = 0,
     ):
         super(SingleDQNTrainer, self).__init__(
             symbol, start, end, interval, initial_amount, commission
@@ -117,29 +118,32 @@ class SingleDQNTrainer(SingleTrainer):
         self.agent = self.agent_type(self.env)
 
     def train(self, total_timesteps: int, monitor_freq=None, **kwargs):
-        if monitor_freq:
-            callback = kwargs.get("callback", [])
-            eval_env = Monitor(self.env)
-            eval_callback = EvalCallback(
-                eval_env,
-                best_model_save_path="./logs/",
-                log_path="./logs/",
-                eval_freq=monitor_freq,
-                deterministic=True,
-                render=False,
-            )
-            callback.append(eval_callback)
-            kwargs["callback"] = callback
-
+        # if monitor_freq:
+        #     callback = kwargs.get("callback", [])
+        #     eval_env = Monitor(self.env)
+        #     eval_callback = EvalCallback(
+        #         eval_env,
+        #         best_model_save_path="./logs/",
+        #         log_path="./logs/",
+        #         eval_freq=monitor_freq,
+        #         deterministic=True,
+        #         render=False,
+        #     )
+        #     callback.append(eval_callback)
+        #     kwargs["callback"] = callback
+        logger.info("Started training...")
         self.agent.learn(total_timesteps, **kwargs)
         self.agent.save(self.model_path)
+        logger.info("Finished training")
+        logger.info(f"Saved model to {self.model_path}")
 
     def reset(self):
         self._initialize_env()
         self._initialize_agent()
 
 
-t = SingleDQNTrainer(**sample_config)
-t.train(1, 100)
-t.load_agent()
-t.env.step(1)
+# t = SingleDQNTrainer(**sample_config)
+# steps = 1e4
+# t.train(steps, callback=ProgressBar(steps))
+# t.load_agent()
+# t.env.step(1)
