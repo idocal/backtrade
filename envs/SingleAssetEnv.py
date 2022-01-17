@@ -116,6 +116,7 @@ class SingleAssetEnv(Env):
         self.step_idx = 0
         self.cash = self.config["initial_amount"]
         self.position = 0.0
+        self.prev_candle = Candle(0, 0, 0, 0, 0, None)
         self.curr_balance = self.cash
         self.curr_trade = None
         self.ledger = Ledger(self.config["initial_amount"])
