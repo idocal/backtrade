@@ -1,9 +1,7 @@
 from typing import Type, Union, Optional, Dict, Any
 from abc import abstractmethod
-
 from stable_baselines3 import DQN
 from stable_baselines3.common.base_class import BasePolicy, BaseAlgorithm
-
 from strategies.strategy import Strategy
 from gym_env import SingleAssetEnv
 
