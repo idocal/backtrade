@@ -33,6 +33,20 @@ class Candle:
         return np.array([self.open, self.high, self.low, self.close,
                          self.volume]).astype(np.float32)
 
+    def relative_to(self, candle):
+        rel_open = (self.open - candle.open) / candle.open
+        rel_high = (self.high - candle.high) / candle.high
+        rel_low = (self.low - candle.low) / candle.low
+        rel_close = (self.close - candle.close) / candle.close
+        return Candle(
+            open=rel_open,
+            high=rel_high,
+            low=rel_low,
+            close=rel_close,
+            volume=self.volume,
+            timestamp=self.timestamp
+        )
+
 
 class Candles:
 
