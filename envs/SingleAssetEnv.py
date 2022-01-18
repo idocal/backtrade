@@ -92,18 +92,31 @@ class SingleAssetEnv(Env):
     def step(self, action: Action):
         logger.debug(f"Taking action: {action}")
         candle = Candle.from_df(self.df.iloc[self.step_idx])
+        is_legal_action = True
+        reward = 0
         if action == Action.BUY:
-            self.buy(candle)
+            if self.curr_trade:
+                # cannot perform buy action while in position
+                logger.warning(f"Action {action} is illegal!")
+                is_legal_action = False
+                reward = float('-inf')
+            else:
+                self.buy(candle)
 
         elif action == Action.SELL:
-            self.sell(candle)
+            if self.curr_trade is None:
+                # cannot perform sell action while not in position
+                logger.warning(f"Action {action} is illegal!")
+                is_legal_action = False
+                reward = float('-inf')
+            else:
+                self.sell(candle)
 
         self.step_idx += 1
         self.curr_balance = self.balance(candle.close)
-        reward = self.curr_balance - self.config["initial_amount"]
-        observation = (
-            candle.relative_to(self.prev_candle).as_array()
-        )
+        if is_legal_action:
+            reward = self.curr_balance - self.config["initial_amount"]
+        observation = (candle.relative_to(self.prev_candle).as_array())
         self.prev_candle = candle
         is_trading = 0 if self.curr_trade is None else 1
         observation = np.append(observation, is_trading)

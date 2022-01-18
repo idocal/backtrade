@@ -27,3 +27,10 @@ class SingleDQNAgent(SingleAgent):
 
     def learn(self, total_timesteps: int, **kwargs):
         self.model.learn(total_timesteps, **kwargs)
+
+
+if __name__ == "__main__":
+    import json
+    c = json.load(open("config.json"))
+    env = SingleAssetEnv(c)
+    agent = SingleDQNAgent(env)
