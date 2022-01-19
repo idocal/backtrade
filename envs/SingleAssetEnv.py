@@ -4,7 +4,7 @@ from gym import spaces, Env
 from backtest import Ledger, Trade
 from enum import Enum
 from data.query import get_ohlcv
-from candles import Candle
+from candles import Candle, Candles
 
 
 class Action(Enum):
@@ -47,6 +47,10 @@ class SingleAssetEnv(Env):
             low=np.append(self.candle_low_bound, 0),
             high=np.append(self.candle_high_bound, 1)
         )  # OHLCV + is_trading
+
+    def plot_candles(self):
+        candles = Candles(self.df)
+        candles.plot()
 
     def balance(self, asset_price):
         return self.cash + self.position * asset_price
@@ -123,13 +127,14 @@ class SingleAssetEnv(Env):
                 self.sell(candle)
 
         self.curr_balance = self.balance(candle.close)
+        self.ledger.log_balance(self.curr_balance, candle.timestamp)
         if is_legal_action:
             reward = self.curr_balance - self.config["initial_amount"]
         self.step_idx += 1  # start from the 2nd observation
         self.prev_candle = candle
         next_candle = Candle.from_df(self.df.iloc[self.step_idx])
         observation = self._observation_from_candle(next_candle)
-        done = self.step_idx == len(self.df)
+        done = self.step_idx == len(self.df) - 1
         info = {}
 
         return observation, reward, done, info
