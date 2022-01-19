@@ -11,15 +11,12 @@ class SingleDQNAgent(SingleAgent):
         self,
         env: SingleAssetEnv,
         policy: Union[str, Type[BasePolicy]] = "MlpPolicy",
-        strategy: Type[Strategy] = None,
         algorithm_kwargs: Optional[Dict[str, Any]] = None,
         policy_kwargs: Optional[Dict[str, Any]] = None,
     ):
         super(SingleDQNAgent, self).__init__(
             DQN, env, policy, algorithm_kwargs, policy_kwargs
         )
-
-        self.strategy = strategy
 
     def predict(self, observation):
         action, _ = self.model.predict(observation)
