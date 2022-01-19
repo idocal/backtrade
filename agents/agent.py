@@ -1,11 +1,7 @@
 from typing import Type, Union, Optional, Dict, Any
 from abc import abstractmethod
-
-from stable_baselines3 import DQN
 from stable_baselines3.common.base_class import BasePolicy, BaseAlgorithm
-
-from strategies.strategy import Strategy
-from gym_env import SingleAssetEnv
+from envs.SingleAssetEnv import SingleAssetEnv
 
 
 class SingleAgent:
@@ -64,26 +60,3 @@ class SingleAgent:
 
     def load(self, path: str):
         self.model = self.algorithm.load(path)
-
-
-class SingleDQNAgent(SingleAgent):
-    def __init__(
-        self,
-        env: SingleAssetEnv,
-        policy: Union[str, Type[BasePolicy]] = "MlpPolicy",
-        strategy: Type[Strategy] = None,
-        algorithm_kwargs: Optional[Dict[str, Any]] = None,
-        policy_kwargs: Optional[Dict[str, Any]] = None,
-    ):
-        super(SingleDQNAgent, self).__init__(
-            DQN, env, policy, algorithm_kwargs, policy_kwargs
-        )
-
-        self.strategy = strategy
-
-    def predict(self, observation):
-        action, _ = self.model.predict(observation)
-        return action
-
-    def learn(self, total_timesteps: int, **kwargs):
-        self.model.learn(total_timesteps, **kwargs)
