@@ -31,19 +31,21 @@ class SingleAssetEnv(Env):
         self.curr_trade: Trade = None
         self.ledger = Ledger(self.config["initial_amount"])
         self.commission = config.get("commission", 0)
-        self.step_idx = 0
+        self.step_idx = 1
         self.df = get_ohlcv(
             asset=self.config["symbol"],
             start=self.config["start"],
             end=self.config["end"],
             interval=self.config["interval"],
         )
-        self.prev_candle = Candle(0, 0, 0, 0, 0, None)
+        self.prev_candle = Candle.from_df(self.df.iloc[0])
         n_actions = len(Action)
         self.action_space = spaces.Discrete(n_actions)
+        self.candle_low_bound = np.array([-1, -1, -1, -1, -100])
+        self.candle_high_bound = np.array([1, 1, 1, 1, 100])
         self.observation_space = spaces.Box(
-            low=np.array([-1, -1, -1, -1, 0, 0]),
-            high=np.array([1, 1, 1, 1, 1, 1]),
+            low=np.append(self.candle_low_bound, 0),
+            high=np.append(self.candle_high_bound, 1)
         )  # OHLCV + is_trading
 
     def balance(self, asset_price):
@@ -89,7 +91,15 @@ class SingleAssetEnv(Env):
         # reset for next trade
         self.curr_trade = None
 
+    def _observation_from_candle(self, candle: Candle):
+        bounds = np.stack((self.candle_low_bound, self.candle_high_bound))
+        obs = candle.relative_to(self.prev_candle, bounds=bounds).as_array()
+        is_trading = 0 if self.curr_trade is None else 1
+        obs = np.append(obs, is_trading)
+        return obs
+
     def step(self, action: Action):
+        logger.debug(f"Evaluating step {self.step_idx}/{len(self.df)}")
         logger.debug(f"Taking action: {action}")
         candle = Candle.from_df(self.df.iloc[self.step_idx])
         is_legal_action = True
@@ -112,24 +122,25 @@ class SingleAssetEnv(Env):
             else:
                 self.sell(candle)
 
-        self.step_idx += 1
         self.curr_balance = self.balance(candle.close)
         if is_legal_action:
             reward = self.curr_balance - self.config["initial_amount"]
-        observation = (candle.relative_to(self.prev_candle).as_array())
+        self.step_idx += 1  # start from the 2nd observation
         self.prev_candle = candle
-        is_trading = 0 if self.curr_trade is None else 1
-        observation = np.append(observation, is_trading)
+        next_candle = Candle.from_df(self.df.iloc[self.step_idx])
+        observation = self._observation_from_candle(next_candle)
         done = self.step_idx == len(self.df)
         info = {}
 
         return observation, reward, done, info
 
     def reset(self):
-        self.step_idx = 0
+        self.step_idx = 1
         self.cash = self.config["initial_amount"]
         self.position = 0.0
-        self.prev_candle = Candle(0, 0, 0, 0, 0, None)
+        self.prev_candle = Candle.from_df(self.df.iloc[0])
         self.curr_balance = self.cash
         self.curr_trade = None
         self.ledger = Ledger(self.config["initial_amount"])
+        first_candle = Candle.from_df(self.df.iloc[1])
+        return self._observation_from_candle(first_candle)

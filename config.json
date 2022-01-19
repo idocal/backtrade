@@ -1,4 +1,21 @@
 {
+    "train": {
+        "num_steps": 100000,
+        "symbol": "BTC",
+        "start": "2021-01-01",
+        "end": "2021-02-01",
+        "interval": "1m",
+        "initial_amount": 10000,
+        "commission": 0.00075
+    },
+    "test": {
+        "symbol": "BTC",
+        "start": "2021-01-01",
+        "end": "2021-02-01",
+        "interval": "1m",
+        "initial_amount": 10000,
+        "commission": 0.00075
+    },
     "symbol": "BTC",
     "start": "2021-01-01",
     "end": "2021-02-01",

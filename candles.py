@@ -33,17 +33,32 @@ class Candle:
         return np.array([self.open, self.high, self.low, self.close,
                          self.volume]).astype(np.float32)
 
-    def relative_to(self, candle):
+    def relative_to(self, candle, bounds=None):
         rel_open = (self.open - candle.open) / candle.open
         rel_high = (self.high - candle.high) / candle.high
         rel_low = (self.low - candle.low) / candle.low
         rel_close = (self.close - candle.close) / candle.close
+        rel_volume = (self.volume - candle.volume) / candle.volume
+
+        def bounded_rel(value, bounds, idx):
+            min_value = bounds[0][idx]
+            max_value = bounds[1][idx]
+            return np.min((np.max((value, min_value)), max_value))
+
+        if bounds is not None:
+            assert bounds.shape == (2, 5)
+            rel_open = bounded_rel(rel_open, bounds, 0)
+            rel_high = bounded_rel(rel_high, bounds, 1)
+            rel_low = bounded_rel(rel_low, bounds, 2)
+            rel_close = bounded_rel(rel_close, bounds, 3)
+            rel_volume = bounded_rel(rel_volume, bounds, 4)
+
         return Candle(
             open=rel_open,
             high=rel_high,
             low=rel_low,
             close=rel_close,
-            volume=self.volume,
+            volume=rel_volume,
             timestamp=self.timestamp
         )
 
