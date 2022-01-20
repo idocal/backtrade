@@ -1,38 +1,31 @@
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+#root {
+    height: 100%;
+}
+
 .App {
-  text-align: center;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #B8CFE9;
+    color: #393A3E;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.train-form {
+    width: 100%;
+    max-width: 600px;
+    background: #fff;
+    padding: 32px;
+    border-radius: 8px;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
-}
-
-.App-link {
-  color: #61dafb;
-}
-
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+.train-form .MuiBox-root {
+    margin-bottom: 32px;
 }
