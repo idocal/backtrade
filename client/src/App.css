@@ -24,8 +24,10 @@ html, body {
     background: #fff;
     padding: 32px;
     border-radius: 8px;
+    display: flex;
+    flex-direction: column;
 }
 
-.train-form .MuiBox-root {
+.train-form > div {
     margin-bottom: 32px;
 }
