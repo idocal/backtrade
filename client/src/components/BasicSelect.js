@@ -10,6 +10,7 @@ export default function BasicSelect(props) {
 
   const handleChange = (event) => {
     setVal(event.target.value);
+    props.handleChange(event);
   };
 
   return (
