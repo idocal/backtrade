@@ -12,7 +12,7 @@ def index():
 
 @app.route("/is_training")
 def is_training():
-    pass
+    return "Here"
 
 
 MODEL_PATH = "model"
