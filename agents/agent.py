@@ -2,6 +2,7 @@ from typing import Type, Union, Optional, Dict, Any
 from abc import abstractmethod
 from stable_baselines3.common.base_class import BasePolicy, BaseAlgorithm
 from envs.SingleAssetEnv import SingleAssetEnv
+from loguru import logger
 
 
 class SingleAgent:
@@ -22,7 +23,7 @@ class SingleAgent:
             self.policy,
             self.env,
             policy_kwargs=self.policy_kwargs,
-            **self.algorithm_kwargs
+            **self.algorithm_kwargs,
         )
 
     @abstractmethod
@@ -57,6 +58,8 @@ class SingleAgent:
 
     def save(self, path: str):
         self.model.save(path)
+        logger.info(f"Saved agent model to {path}.zip")
 
     def load(self, path: str):
         self.model = self.algorithm.load(path)
+        logger.info(f"Loaded agent model from {path}.zip")
