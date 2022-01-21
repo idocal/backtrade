@@ -1,4 +1,6 @@
 from stable_baselines3.common.callbacks import BaseCallback
+from enum import Enum
+from typing import Type
 
 
 class ProgressBar(BaseCallback):
@@ -18,24 +20,57 @@ class ProgressBar(BaseCallback):
         print(f"Step {self.num_timesteps}/{self.total_timesteps}: DONE")
 
 
-class IsTraining(BaseCallback):
-    def __init__(self, path: str):
-        super(IsTraining, self).__init__()
-        self.path = path
+class IsTrainingCallback(BaseCallback):
+    def __init__(self, indexes: Type[Enum], file_path: str):
+        super(IsTrainingCallback, self).__init__()
+        self.path = file_path
+        self.indexes = indexes
 
     def _on_step(self) -> bool:
         return True
 
     def _on_training_start(self) -> None:
-        fp = open(self.path, 'wb')
+        fp = open(self.path, "wb")
         fp.seek(0)
-        fp.write((1).to_bytes(1, byteorder="big", signed=False))
+        fp.write(
+            self.indexes.STARTED_TRAINING.value.to_bytes(
+                1, byteorder="big", signed=False
+            )
+        )
         fp.flush()
         fp.close()
 
     def _on_training_end(self) -> None:
-        fp = open(self.path, 'wb')
+        fp = open(self.path, "wb")
         fp.seek(0)
-        fp.write((0).to_bytes(1, byteorder="big", signed=False))
+        fp.write(
+            self.indexes.DONE_TRAINING.value.to_bytes(1, byteorder="big", signed=False)
+        )
         fp.flush()
         fp.close()
+
+
+class TrainingStepCallback(BaseCallback):
+    def __init__(self, indexes: Type[Enum], file_path: str):
+        super(TrainingStepCallback, self).__init__()
+        self.indexes = indexes
+        self.path = file_path
+        self.fp = open(self.path, "wb")
+
+    def _on_step(self) -> bool:
+        self.fp.seek(0)
+        self.fp.write(self.num_timesteps.to_bytes(4, byteorder="big", signed=False))
+        self.fp.flush()
+        return True
+
+    def _on_training_start(self) -> None:
+        pass
+
+    def _on_training_end(self) -> None:
+        self.fp.seek(0)
+        self.fp.truncate(0)
+        self.fp.write(
+            self.indexes.DONE_TRAINING.value.to_bytes(1, byteorder="big", signed=False)
+        )
+        self.fp.flush()
+        self.fp.close()

@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 from agents.train import *
 from stable_baselines3.common.logger import *
+from enum import Enum
 
 app = Flask(__name__)
 
@@ -10,20 +11,38 @@ def index():
     return jsonify(alive=True)
 
 
-IS_TRAINING = "is_training"
+class TrainingStatus(Enum):
+    STARTED_TRAINING = 1
+    DONE_TRAINING = 0
+    DID_NOT_START_TRAINING = -1
+
+
+def training_status(param_name: str, file_path: str):
+    try:
+        fp = open(file_path, "rb")
+        status = int.from_bytes(fp.read(), byteorder="big")
+        fp.close()
+        return jsonify({param_name: status})
+    except FileNotFoundError:
+        """If haven't trained yet"""
+        return jsonify({param_name: TrainingStatus.DID_NOT_START_TRAINING.value})
+
+
+# TODO: might want to remove is_training and leave just training step
+IS_TRAINING_FILE_PATH = "is_training"
 
 
 @app.route("/is_training")
 def is_training():
-    try:
-        fp = open(IS_TRAINING, 'rb')
-        # status: 0 - done training, 1 - is training
-        status = int.from_bytes(fp.read(), byteorder="big")
-        fp.close()
-        return jsonify(is_training=status)
-    except FileNotFoundError:
-        """If haven't trained yet"""
-        return jsonify(is_training=-1)
+    return training_status("is_training", IS_TRAINING_FILE_PATH)
+
+
+TRAINING_STEP_FILE_PATH = "training_step"
+
+
+@app.route("/training_step")
+def training_step():
+    return training_status("training_step", TRAINING_STEP_FILE_PATH)
 
 
 MODEL_PATH = "model"
@@ -37,7 +56,13 @@ def train():
         check_env(env)
         agent = SingleDQNAgent(env)
         num_train_steps = train_config["num_steps"]
-        agent.learn(num_train_steps, callback=[IsTraining(IS_TRAINING)])
+        agent.learn(
+            num_train_steps,
+            callback=[
+                IsTrainingCallback(TrainingStatus, file_path=IS_TRAINING_FILE_PATH),
+                TrainingStepCallback(TrainingStatus, file_path=TRAINING_STEP_FILE_PATH),
+            ],
+        )
         agent.save(MODEL_PATH)
 
     return jsonify(success=True)
