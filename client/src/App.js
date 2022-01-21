@@ -7,7 +7,7 @@ import config from './config';
 
 
 async function trainAgent(config) {
-    const URL = '/train';
+    const URL = 'train';
     const response = await fetch(URL, {
           method: 'POST',
           headers: {
@@ -27,7 +27,7 @@ function App() {
 
     function onTrainClick() {
         let config = {
-            "coin": symbol,
+            "symbol": symbol,
             "interval": interval,
             "start": startDate,
             "end": endDate,
