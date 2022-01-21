@@ -1,18 +1,29 @@
-import numpy as np
 from flask import Flask, request, jsonify
 from agents.train import *
+from stable_baselines3.common.logger import *
 
 app = Flask(__name__)
 
 
 @app.route("/")
 def index():
-    return jsonify(success=True)
+    return jsonify(alive=True)
+
+
+IS_TRAINING = "is_training"
 
 
 @app.route("/is_training")
 def is_training():
-    return "Here"
+    try:
+        fp = open(IS_TRAINING, 'rb')
+        # status: 0 - done training, 1 - is training
+        status = int.from_bytes(fp.read(), byteorder="big")
+        fp.close()
+        return jsonify(is_training=status)
+    except FileNotFoundError:
+        """If haven't trained yet"""
+        return jsonify(is_training=-1)
 
 
 MODEL_PATH = "model"
@@ -26,7 +37,7 @@ def train():
         check_env(env)
         agent = SingleDQNAgent(env)
         num_train_steps = train_config["num_steps"]
-        agent.learn(num_train_steps)
+        agent.learn(num_train_steps, callback=[IsTraining(IS_TRAINING)])
         agent.save(MODEL_PATH)
 
     return jsonify(success=True)
