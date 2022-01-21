@@ -1,5 +1,7 @@
-from flask import Flask, request, jsonify
 from agents.train import *
+from data.download import download
+
+from flask import Flask, request, jsonify
 from stable_baselines3.common.logger import *
 from enum import Enum
 
@@ -28,7 +30,7 @@ def training_status(param_name: str, file_path: str):
         return jsonify({param_name: TrainingStatus.DID_NOT_START_TRAINING.value})
 
 
-# TODO: might want to remove is_training and leave just training step
+# TODO: might want to remove is_training and leave just training_step
 IS_TRAINING_FILE_PATH = "is_training"
 
 
@@ -45,14 +47,23 @@ def training_step():
     return training_status("training_step", TRAINING_STEP_FILE_PATH)
 
 
-MODEL_PATH = "model"
+MODEL_FILE_PATH = "model"
 
 
 @app.route("/train", methods=["POST"])
 def train():
     if request.method == "POST":
         train_config = request.get_json()
-        env = SingleAssetEnv(train_config)
+        try:
+            env = SingleAssetEnv(train_config)
+        except AttributeError:
+            download(
+                [train_config["symbol"]],
+                [train_config["interval"]],
+                train_config["start"],
+                train_config["end"],
+            )
+            env = SingleAssetEnv(train_config)
         check_env(env)
         agent = SingleDQNAgent(env)
         num_train_steps = train_config["num_steps"]
@@ -63,7 +74,7 @@ def train():
                 TrainingStepCallback(TrainingStatus, file_path=TRAINING_STEP_FILE_PATH),
             ],
         )
-        agent.save(MODEL_PATH)
+        agent.save(MODEL_FILE_PATH)
 
     return jsonify(success=True)
 
@@ -76,7 +87,7 @@ def test():
         check_env(test_env)
         obs = test_env.reset()
         agent = SingleDQNAgent(test_env)
-        agent.load(MODEL_PATH)
+        agent.load(MODEL_FILE_PATH)
         num_test_steps = test_config.get("num_steps", np.inf)
         while test_env.step_idx <= num_test_steps:
             action = agent.predict(obs)
