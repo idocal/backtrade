@@ -20,6 +20,11 @@ class ProgressBar(BaseCallback):
         print(f"Step {self.num_timesteps}/{self.total_timesteps}: DONE")
 
 
+# note: potential overflow if not used properly
+INDEX_BYTES = 1
+STEP_BYTES = 4
+
+
 class IsTrainingCallback(BaseCallback):
     def __init__(self, indexes: Type[Enum], file_path: str):
         super(IsTrainingCallback, self).__init__()
@@ -34,7 +39,7 @@ class IsTrainingCallback(BaseCallback):
         fp.seek(0)
         fp.write(
             self.indexes.STARTED_TRAINING.value.to_bytes(
-                1, byteorder="big", signed=False
+                INDEX_BYTES, byteorder="big", signed=False
             )
         )
         fp.flush()
@@ -44,7 +49,9 @@ class IsTrainingCallback(BaseCallback):
         fp = open(self.path, "wb")
         fp.seek(0)
         fp.write(
-            self.indexes.DONE_TRAINING.value.to_bytes(1, byteorder="big", signed=False)
+            self.indexes.DONE_TRAINING.value.to_bytes(
+                INDEX_BYTES, byteorder="big", signed=False
+            )
         )
         fp.flush()
         fp.close()
@@ -59,7 +66,9 @@ class TrainingStepCallback(BaseCallback):
 
     def _on_step(self) -> bool:
         self.fp.seek(0)
-        self.fp.write(self.num_timesteps.to_bytes(4, byteorder="big", signed=False))
+        self.fp.write(
+            self.num_timesteps.to_bytes(STEP_BYTES, byteorder="big", signed=False)
+        )
         self.fp.flush()
         return True
 
@@ -70,7 +79,9 @@ class TrainingStepCallback(BaseCallback):
         self.fp.seek(0)
         self.fp.truncate(0)
         self.fp.write(
-            self.indexes.DONE_TRAINING.value.to_bytes(1, byteorder="big", signed=False)
+            self.indexes.DONE_TRAINING.value.to_bytes(
+                INDEX_BYTES, byteorder="big", signed=False
+            )
         )
         self.fp.flush()
         self.fp.close()
