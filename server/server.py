@@ -1,5 +1,6 @@
 from agents.train import *
 from data.download import download
+from data.query import MissingData
 
 import pandas as pd
 from flask import Flask, request, jsonify, session, Response
@@ -51,7 +52,7 @@ def train():
         train_config = request.get_json()
         try:
             env = SingleAssetEnv(train_config)
-        except AttributeError:  # TODO specify error
+        except MissingData:
             download(
                 [train_config["symbol"]],
                 [train_config["interval"]],
@@ -86,7 +87,7 @@ def test():
         # TODO: respond to client before testing?
         try:
             test_env = SingleAssetEnv(test_config)
-        except AttributeError:  # TODO: specify errors
+        except MissingData:
             download(
                 [test_config["symbol"]],
                 [test_config["interval"]],
