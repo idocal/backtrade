@@ -48,32 +48,35 @@ def initialize_session():
 def train():
     if request.method == "POST":
         initialize_session()
-        # TODO return OK
         train_config = request.get_json()
-        try:
-            env = SingleAssetEnv(train_config)
-        except AttributeError:  # TODO specify error
-            download(
-                [train_config["symbol"]],
-                [train_config["interval"]],
-                train_config["start"],
-                train_config["end"],
-            )
-            env = SingleAssetEnv(train_config)
-        check_env(env)
-        agent = SingleDQNAgent(env)
-        num_train_steps = train_config["num_steps"]
-        agent.learn(
-            num_train_steps,
-            callback=[
-                TrainingStepCallback(
-                    TrainingStatus, file_path=TRAINING_STATUS_FILE_PATH
-                ),
-            ],
-        )
-        agent.save(MODEL_FILE_PATH)
 
-    return jsonify(id=session["sess_id"])
+        def call_train():
+            try:
+                env = SingleAssetEnv(train_config)
+            except AttributeError:  # TODO specify error
+                download(
+                    [train_config["symbol"]],
+                    [train_config["interval"]],
+                    train_config["start"],
+                    train_config["end"],
+                )
+                env = SingleAssetEnv(train_config)
+            check_env(env)
+            agent = SingleDQNAgent(env)
+            num_train_steps = train_config["num_steps"]
+            agent.learn(
+                num_train_steps,
+                callback=[
+                    TrainingStepCallback(
+                        TrainingStatus, file_path=TRAINING_STATUS_FILE_PATH
+                    ),
+                ],
+            )
+            agent.save(MODEL_FILE_PATH)
+
+        r = jsonify(id=session["sess_id"])
+        r.call_on_close(call_train)
+        return r
 
 
 @app.route("/test", methods=["POST"])
