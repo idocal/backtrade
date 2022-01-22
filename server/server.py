@@ -1,10 +1,10 @@
-import pandas as pd
-
 from agents.train import *
 from data.download import download
 
+import pandas as pd
 from flask import Flask, request, jsonify, session, Response
 from stable_baselines3.common.logger import *
+
 from enum import Enum
 import time
 
@@ -49,21 +49,21 @@ def train():
     if request.method == "POST":
         initialize_session()
         train_config = request.get_json()
+        try:
+            env = SingleAssetEnv(train_config)
+        except AttributeError:  # TODO specify error
+            download(
+                [train_config["symbol"]],
+                [train_config["interval"]],
+                train_config["start"],
+                train_config["end"],
+            )
+            env = SingleAssetEnv(train_config)
+        check_env(env)
+        agent = SingleDQNAgent(env)
+        num_train_steps = train_config["num_steps"]
 
         def call_train():
-            try:
-                env = SingleAssetEnv(train_config)
-            except AttributeError:  # TODO specify error
-                download(
-                    [train_config["symbol"]],
-                    [train_config["interval"]],
-                    train_config["start"],
-                    train_config["end"],
-                )
-                env = SingleAssetEnv(train_config)
-            check_env(env)
-            agent = SingleDQNAgent(env)
-            num_train_steps = train_config["num_steps"]
             agent.learn(
                 num_train_steps,
                 callback=[
@@ -83,6 +83,7 @@ def train():
 def test():
     if request.method == "POST":
         test_config = request.get_json()
+        # TODO: respond to client before testing?
         try:
             test_env = SingleAssetEnv(test_config)
         except AttributeError:  # TODO: specify errors
@@ -113,7 +114,7 @@ def test():
 
         # TODO assert length of ledger and candles is the same
 
-        def generate(df: pd.DataFrame):
+        def generate_data(df: pd.DataFrame):
             """Yields the whole ledger in one chunk, then yields every candle in order"""
 
             yield '{"ledger":' + json.dumps(
@@ -131,7 +132,7 @@ def test():
                 orient="values"
             ) + "}}"
 
-        return Response(generate(agent.env.df), mimetype="application/json")
+        return Response(generate_data(agent.env.df), mimetype="application/json")
 
 
 app.run(host="127.0.0.1", port=5000)
