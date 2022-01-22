@@ -141,8 +141,10 @@ def test():
                 default=str,
             ) + ',"candles":{'
             for i in range(len(df) - 1):
-                yield f'"{i}":' + df.iloc[i].to_json() + ","
-            yield f'"{len(df)-1}":' + df.iloc[len(df) - 1].to_json() + "}}"
+                yield f'"{i}":' + df.iloc[i].to_json(orient="values") + ","
+            yield f'"{len(df)-1}":' + df.iloc[len(df) - 1].to_json(
+                orient="values"
+            ) + "}}"
 
         return Response(generate(agent.env.df), mimetype="application/json")
 
