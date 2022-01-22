@@ -25,38 +25,6 @@ INDEX_BYTES = 1
 STEP_BYTES = 4
 
 
-class IsTrainingCallback(BaseCallback):
-    def __init__(self, indexes: Type[Enum], file_path: str):
-        super(IsTrainingCallback, self).__init__()
-        self.path = file_path
-        self.indexes = indexes
-
-    def _on_step(self) -> bool:
-        return True
-
-    def _on_training_start(self) -> None:
-        fp = open(self.path, "wb")
-        fp.seek(0)
-        fp.write(
-            self.indexes.STARTED_TRAINING.value.to_bytes(
-                INDEX_BYTES, byteorder="big", signed=False
-            )
-        )
-        fp.flush()
-        fp.close()
-
-    def _on_training_end(self) -> None:
-        fp = open(self.path, "wb")
-        fp.seek(0)
-        fp.write(
-            self.indexes.DONE_TRAINING.value.to_bytes(
-                INDEX_BYTES, byteorder="big", signed=False
-            )
-        )
-        fp.flush()
-        fp.close()
-
-
 class TrainingStepCallback(BaseCallback):
     def __init__(self, indexes: Type[Enum], file_path: str):
         super(TrainingStepCallback, self).__init__()

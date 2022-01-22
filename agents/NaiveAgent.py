@@ -6,7 +6,6 @@ from envs.SingleAssetEnv import Action
 
 
 class NaiveAgent(SingleAgent):
-
     def __init__(self):
         config = json.load(open("config.json"))
         env = SingleAssetEnv(config)

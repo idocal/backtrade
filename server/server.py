@@ -23,52 +23,36 @@ class TrainingStatus(Enum):
     DID_NOT_START_TRAINING = -1
 
 
-def training_status(param_name: str, file_path: str):
+MODEL_FILE_PATH = "model"
+TRAINING_STATUS_FILE_PATH = "training_status"
+
+
+@app.route("/training_status")
+def training_status():
     try:
-        fp = open(file_path, "rb")
+        fp = open(TRAINING_STATUS_FILE_PATH, "rb")
         status = int.from_bytes(fp.read(), byteorder="big")
         fp.close()
-        return jsonify({param_name: status})
+        return jsonify({"training_status": status})
     except FileNotFoundError:
         """If haven't trained yet"""
-        return jsonify({param_name: TrainingStatus.DID_NOT_START_TRAINING.value})
+        return jsonify({"training_status": TrainingStatus.DID_NOT_START_TRAINING.value})
 
 
-MODEL_FILE_PATH = "model"
-IS_TRAINING_FILE_PATH = "is_training"
-TRAINING_STEP_FILE_PATH = "training_step"
-
-
-@app.route("/is_training")
-def is_training():
-    return training_status("is_training", IS_TRAINING_FILE_PATH)
-    # return training_status("is_training", session["is_training_path"])
-
-
-@app.route("/training_step")
-def training_step():
-    return training_status("training_step", TRAINING_STEP_FILE_PATH)
-    # return training_status("training_step", session["training_step_path"])
-
-
-def initialize_session(msg=None):
+def initialize_session():
     sess_id = time.time_ns()
-
     session["sess_id"] = sess_id
-    session["is_training_path"] = IS_TRAINING_FILE_PATH + "_" + str(sess_id)
-    session["training_step_path"] = TRAINING_STEP_FILE_PATH + "_" + str(sess_id)
-    session["model_path"] = MODEL_FILE_PATH + "_" + str(sess_id)
-    # return Response(msg, status=200)
 
 
 @app.route("/train", methods=["POST"])
 def train():
     if request.method == "POST":
         initialize_session()
+        # TODO return OK
         train_config = request.get_json()
         try:
             env = SingleAssetEnv(train_config)
-        except AttributeError:
+        except AttributeError:  # TODO specify error
             download(
                 [train_config["symbol"]],
                 [train_config["interval"]],
@@ -82,14 +66,11 @@ def train():
         agent.learn(
             num_train_steps,
             callback=[
-                # IsTrainingCallback(TrainingStatus, file_path=session["is_training_path"]),
-                # TrainingStepCallback(TrainingStatus, file_path=session["training_step_path"]),
-                # TODO: might want to remove is_training and leave just training_step
-                IsTrainingCallback(TrainingStatus, file_path=IS_TRAINING_FILE_PATH),
-                TrainingStepCallback(TrainingStatus, file_path=TRAINING_STEP_FILE_PATH),
+                TrainingStepCallback(
+                    TrainingStatus, file_path=TRAINING_STATUS_FILE_PATH
+                ),
             ],
         )
-        # agent.save(session["model_path"])
         agent.save(MODEL_FILE_PATH)
 
     return jsonify(id=session["sess_id"])
@@ -101,7 +82,7 @@ def test():
         test_config = request.get_json()
         try:
             test_env = SingleAssetEnv(test_config)
-        except AttributeError:
+        except AttributeError:  # TODO: specify errors
             download(
                 [test_config["symbol"]],
                 [test_config["interval"]],
@@ -114,7 +95,6 @@ def test():
         agent = SingleDQNAgent(test_env)
 
         try:
-            # agent.load(MODEL_FILE_PATH + "_" + str(test_config["id"]))
             agent.load(MODEL_FILE_PATH)
         except FileNotFoundError:
             return Response(
@@ -127,6 +107,8 @@ def test():
             obs, reward, done, info = test_env.step(action)
             if done:
                 break
+
+        # TODO assert length of ledger and candles is the same
 
         def generate(df: pd.DataFrame):
             """Yields the whole ledger in one chunk, then yields every candle in order"""
@@ -142,7 +124,7 @@ def test():
             ) + ',"candles":{'
             for i in range(len(df) - 1):
                 yield f'"{i}":' + df.iloc[i].to_json(orient="values") + ","
-            yield f'"{len(df)-1}":' + df.iloc[len(df) - 1].to_json(
+            yield f'"{len(df) - 1}":' + df.iloc[len(df) - 1].to_json(
                 orient="values"
             ) + "}}"
 
