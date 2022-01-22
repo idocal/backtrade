@@ -62,14 +62,14 @@ def train():
             env = SingleAssetEnv(train_config)
         check_env(env)
         agent = SingleDQNAgent(env)
-        num_train_steps = train_config["num_steps"]
+        num_train_steps = len(env.df)
 
         def call_train():
             agent.learn(
                 num_train_steps,
                 callback=[
                     TrainingStepCallback(
-                        TrainingStatus, file_path=TRAINING_STATUS_FILE_PATH
+                        TrainingStatus, TRAINING_STATUS_FILE_PATH, num_train_steps
                     ),
                 ],
             )
@@ -106,14 +106,13 @@ def test():
                 "Agent model file not found, try training first.", status=500
             )
 
-        num_test_steps = test_config.get("num_steps", np.inf)
-        while test_env.step_idx <= num_test_steps:
+        while True:
             action = agent.predict(obs)
             obs, reward, done, info = test_env.step(action)
             if done:
                 break
 
-        # TODO assert length of ledger and candles is the same
+        # TODO assert length of ledger and candles is the same (or not)
 
         def generate_data(df: pd.DataFrame):
             """Yields the whole ledger in one chunk, then yields every candle in order"""

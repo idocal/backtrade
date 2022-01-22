@@ -22,21 +22,21 @@ class ProgressBar(BaseCallback):
 
 # note: potential overflow if not used properly
 INDEX_BYTES = 1
-STEP_BYTES = 4
+PROGRESS_BYTES = 1
 
 
 class TrainingStepCallback(BaseCallback):
-    def __init__(self, indexes: Type[Enum], file_path: str):
+    def __init__(self, indexes: Type[Enum], file_path: str, num_train_steps: int):
         super(TrainingStepCallback, self).__init__()
         self.indexes = indexes
         self.path = file_path
+        self.num_train_steps = num_train_steps
         self.fp = open(self.path, "wb")
 
     def _on_step(self) -> bool:
+        progress = int(self.num_timesteps * 100 / self.num_train_steps)
         self.fp.seek(0)
-        self.fp.write(
-            self.num_timesteps.to_bytes(STEP_BYTES, byteorder="big", signed=False)
-        )
+        self.fp.write(progress.to_bytes(PROGRESS_BYTES, byteorder="big", signed=False))
         self.fp.flush()
         return True
 
