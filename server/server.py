@@ -84,7 +84,6 @@ def train():
             callback=[
                 # IsTrainingCallback(TrainingStatus, file_path=session["is_training_path"]),
                 # TrainingStepCallback(TrainingStatus, file_path=session["training_step_path"]),
-
                 # TODO: might want to remove is_training and leave just training_step
                 IsTrainingCallback(TrainingStatus, file_path=IS_TRAINING_FILE_PATH),
                 TrainingStepCallback(TrainingStatus, file_path=TRAINING_STEP_FILE_PATH),
@@ -132,8 +131,7 @@ def test():
         def generate(df: pd.DataFrame):
             """Yields the whole ledger in one chunk, then yields every candle in order"""
 
-            yield '{"ledger":'
-            yield json.dumps(
+            yield '{"ledger":' + json.dumps(
                 dict(
                     balances=agent.env.ledger.balances,
                     timestamps=agent.env.ledger.dates,
@@ -141,14 +139,10 @@ def test():
                 indent=4,
                 sort_keys=True,
                 default=str,
-            )
-            yield ',"candles":{'
-            for i in range(len(df)):
-                yield f'"{i}":'
-                yield df.iloc[i].to_json()
-                if i != len(df) - 1:
-                    yield ","
-            yield "}}"
+            ) + ',"candles":{'
+            for i in range(len(df) - 1):
+                yield f'"{i}":' + df.iloc[i].to_json() + ","
+            yield f'"{len(df)-1}":' + df.iloc[len(df) - 1].to_json() + "}}"
 
         return Response(generate(agent.env.df), mimetype="application/json")
 
