@@ -1,13 +1,14 @@
 from agents.SingleDQNAgent import SingleDQNAgent
 from envs.SingleAssetEnv import SingleAssetEnv
 from stable_baselines3.common.env_checker import check_env
+from agents.callbacks import *
 import json
 
 
 if __name__ == "__main__":
     config = json.load(open("config.json"))
     # train agent
-    train_config = config['train']
+    train_config = config["train"]
     env = SingleAssetEnv(train_config)
     check_env(env)
     agent = SingleDQNAgent(env)
@@ -15,7 +16,7 @@ if __name__ == "__main__":
     agent.learn(num_train_steps)
 
     # test agent
-    test_config = config['test']
+    test_config = config["test"]
     test_env = SingleAssetEnv(test_config)
     check_env(test_env)
     obs = test_env.reset()
