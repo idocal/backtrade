@@ -3,15 +3,18 @@ import TextField from '@mui/material/TextField';
 import AdapterDate from '@mui/lab/AdapterDateFns';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import DatePicker from '@mui/lab/DatePicker';
-import format from 'date-fns/format';
+// import format from 'date-fns/format';
+import { isValid, format } from 'date-fns';
 
 export default function BasicDatePicker(props) {
   const [val, setVal] = React.useState(null);
 
   const handleChange = (date) => {
-        let formatted = format(date, "yyyy-MM-dd");
         setVal(date);
-        props.handleChange(formatted);
+        if (isValid(date)) {
+            let formatted = format(date, "yyyy-MM-dd");
+            props.handleChange(formatted);
+        }
   };
 
   return (
