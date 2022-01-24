@@ -5,7 +5,7 @@ export default function Evaluation(props) {
 
     return (
       <div className="evaluation">
-        Hello
+        {props.results}
       </div>
     )
 }

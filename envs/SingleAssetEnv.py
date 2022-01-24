@@ -38,6 +38,7 @@ class SingleAssetEnv(Env):
             end=self.config["end"],
             interval=self.config["interval"],
         )
+        print(self.df)
         self.prev_candle = Candle.from_df(self.df.iloc[0])
         n_actions = len(Action)
         self.action_space = spaces.Discrete(n_actions)

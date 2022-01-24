@@ -4,18 +4,6 @@ import BasicDatePicker from '../components/BasicDatePicker';
 import Button from '@mui/material/Button';
 
 
-async function trainAgent(config) {
-    const URL = 'train';
-    const response = await fetch(URL, {
-          method: 'POST',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(config)
-        });
-    return response
-}
 
 export default function Train(props) {
 
@@ -23,6 +11,21 @@ export default function Train(props) {
     const [interval, _setInterval] = React.useState('');
     const [startDate, setStartDate] = React.useState('');
     const [endDate, setEndDate] = React.useState('');
+
+    async function trainAgent(config) {
+        const URL = 'train';
+        let response = await fetch(URL, {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(config)
+        });
+        props.onTrainEnd(response);
+        console.log(response); // TODO: new API for train, sample the istraining
+        return response
+    }
 
     function onTrainClick() {
         let config = {
@@ -34,7 +37,7 @@ export default function Train(props) {
             "commission": 0.00075,
             "num_steps": 10000
         }
-        console.log(config);
+        props.onTrainClick();
         trainAgent(config);
     }
 

@@ -3,7 +3,6 @@ import TextField from '@mui/material/TextField';
 import AdapterDate from '@mui/lab/AdapterDateFns';
 import LocalizationProvider from '@mui/lab/LocalizationProvider';
 import DatePicker from '@mui/lab/DatePicker';
-// import format from 'date-fns/format';
 import { isValid, format } from 'date-fns';
 
 export default function BasicDatePicker(props) {
