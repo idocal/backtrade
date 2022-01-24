@@ -18,26 +18,35 @@ def index():
     return jsonify(alive=True)
 
 
-class TrainingStatus(Enum):
-    STARTED_TRAINING = 1
-    DONE_TRAINING = 0
-    DID_NOT_START_TRAINING = -1
+class Status(Enum):
+    DONE = 0
+    DID_NOT_START = -1
 
 
 MODEL_FILE_PATH = "model"
 TRAINING_STATUS_FILE_PATH = "training_status"
+TESTING_STATUS_FILE_PATH = "testing_status"
+
+
+def status(param_name: str, path: str):
+    try:
+        fp = open(path, "rb")
+        st = int.from_bytes(fp.read(), byteorder="big")
+        fp.close()
+        return jsonify({param_name: st})
+    except FileNotFoundError:
+        """If haven't trained yet"""
+        return jsonify({param_name: Status.DID_NOT_START.value})
 
 
 @app.route("/training_status")
 def training_status():
-    try:
-        fp = open(TRAINING_STATUS_FILE_PATH, "rb")
-        status = int.from_bytes(fp.read(), byteorder="big")
-        fp.close()
-        return jsonify({"training_status": status})
-    except FileNotFoundError:
-        """If haven't trained yet"""
-        return jsonify({"training_status": TrainingStatus.DID_NOT_START_TRAINING.value})
+    return status("training_status", TRAINING_STATUS_FILE_PATH)
+
+
+@app.route("/testing_status")
+def testing_status():
+    return status("testing_status", TESTING_STATUS_FILE_PATH)
 
 
 def initialize_session():
@@ -69,7 +78,7 @@ def train():
                 num_train_steps,
                 callback=[
                     TrainingStepCallback(
-                        TrainingStatus, TRAINING_STATUS_FILE_PATH, num_train_steps
+                        Status, TRAINING_STATUS_FILE_PATH, num_train_steps
                     ),
                 ],
             )
@@ -84,7 +93,6 @@ def train():
 def test():
     if request.method == "POST":
         test_config = request.get_json()
-        # TODO: respond to client before testing?
         try:
             test_env = SingleAssetEnv(test_config)
         except MissingData:
@@ -98,7 +106,6 @@ def test():
         check_env(test_env)
         obs = test_env.reset()
         agent = SingleDQNAgent(test_env)
-
         try:
             agent.load(MODEL_FILE_PATH)
         except FileNotFoundError:
@@ -106,10 +113,23 @@ def test():
                 "Agent model file not found, try training first.", status=500
             )
 
+        # TODO: respond to client before testing?
+
+        fp = open(TESTING_STATUS_FILE_PATH, "wb")
         while True:
             action = agent.predict(obs)
             obs, reward, done, info = test_env.step(action)
+            write_progress_to_file(test_env.step_idx, len(test_env.df), fp)
             if done:
+                fp.seek(0)
+                fp.truncate(0)
+                fp.write(
+                    Status.DONE.value.to_bytes(
+                        INDEX_BYTES, byteorder="big", signed=False
+                    )
+                )
+                fp.flush()
+                fp.close()
                 break
 
         # TODO assert length of ledger and candles is the same (or not)

@@ -1,6 +1,6 @@
 from stable_baselines3.common.callbacks import BaseCallback
 from enum import Enum
-from typing import Type
+from typing import Type, BinaryIO
 
 
 class ProgressBar(BaseCallback):
@@ -34,10 +34,7 @@ class TrainingStepCallback(BaseCallback):
         self.fp = open(self.path, "wb")
 
     def _on_step(self) -> bool:
-        progress = int(self.num_timesteps * 100 / self.num_train_steps)
-        self.fp.seek(0)
-        self.fp.write(progress.to_bytes(PROGRESS_BYTES, byteorder="big", signed=False))
-        self.fp.flush()
+        write_progress_to_file(self.num_timesteps, self.num_train_steps, self.fp)
         return True
 
     def _on_training_start(self) -> None:
@@ -47,9 +44,14 @@ class TrainingStepCallback(BaseCallback):
         self.fp.seek(0)
         self.fp.truncate(0)
         self.fp.write(
-            self.indexes.DONE_TRAINING.value.to_bytes(
-                INDEX_BYTES, byteorder="big", signed=False
-            )
+            self.indexes.DONE.value.to_bytes(INDEX_BYTES, byteorder="big", signed=False)
         )
         self.fp.flush()
         self.fp.close()
+
+
+def write_progress_to_file(step: int, total_steps: int, file: BinaryIO):
+    progress = int(step * 100 / total_steps)
+    file.seek(0)
+    file.write(progress.to_bytes(PROGRESS_BYTES, byteorder="big", signed=False))
+    file.flush()
