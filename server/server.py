@@ -36,7 +36,7 @@ def clear_agent():
 
 
 class Status(Enum):
-    DONE = 0
+    DONE = 200
     DID_NOT_START = -1
 
 
@@ -145,7 +145,7 @@ def test():
             obs, reward, done, info = test_env.step(action)
             write_progress_to_file(fp, test_env.step_idx, len(test_env.df))
             if done:
-                write_progress_to_file(fp, Status.DONE.value, truncate=True)
+                write_progress_to_file(fp, Status.DONE.value)
                 fp.close()
                 break
 
