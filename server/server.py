@@ -50,10 +50,11 @@ def get_status(param_name: str, path: str):
         fp = open(path, "rb")
         st = int.from_bytes(fp.read(), byteorder="big")
         fp.close()
-        return jsonify({param_name: st})
+        complete = True if st == Status.DONE.value else False
+        return jsonify({param_name: st, "complete": complete})
     except FileNotFoundError:
         """If haven't trained yet"""
-        return jsonify({param_name: Status.DID_NOT_START.value})
+        return jsonify({param_name: Status.DID_NOT_START.value, "complete": False})
 
 
 @app.route("/training_status", methods=["POST"])
