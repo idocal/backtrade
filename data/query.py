@@ -32,6 +32,8 @@ def get_ohlcv(asset: str, start: str, end: str, interval: str) -> pd.DataFrame:
     logger.info("Done reading data!")
     result = pd.read_sql(q, conn, index_col="Timestamp")
     if len(result) == 0:
-        raise MissingData(f"Couldn't find data for dates {start} to {end} for {asset} and {interval}")
+        raise MissingData(
+            f"Couldn't find data for dates {start} to {end} for {asset} and {interval}"
+        )
 
     return result
