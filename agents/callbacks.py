@@ -21,20 +21,19 @@ class ProgressBar(BaseCallback):
 
 
 # note: potential overflow if not used properly
-INDEX_BYTES = 1
-PROGRESS_BYTES = 1
+BYTES = 1
 
 
-class TrainingStepCallback(BaseCallback):
+class StatusCallback(BaseCallback):
     def __init__(self, indexes: Type[Enum], file_path: str, num_train_steps: int):
-        super(TrainingStepCallback, self).__init__()
+        super(StatusCallback, self).__init__()
         self.indexes = indexes
         self.path = file_path
         self.num_train_steps = num_train_steps
         self.fp = open(self.path, "wb")
 
     def _on_step(self) -> bool:
-        write_progress_to_file(self.num_timesteps, self.num_train_steps, self.fp)
+        write_progress_to_file(self.fp, self.num_timesteps, self.num_train_steps)
         return True
 
     def _on_training_start(self) -> None:
@@ -44,14 +43,18 @@ class TrainingStepCallback(BaseCallback):
         self.fp.seek(0)
         self.fp.truncate(0)
         self.fp.write(
-            self.indexes.DONE.value.to_bytes(INDEX_BYTES, byteorder="big", signed=False)
+            self.indexes.DONE.value.to_bytes(BYTES, byteorder="big", signed=False)
         )
         self.fp.flush()
         self.fp.close()
 
 
-def write_progress_to_file(step: int, total_steps: int, file: BinaryIO):
+def write_progress_to_file(
+    file: BinaryIO, step: int, total_steps: int = 100, truncate: bool = False
+):
     progress = int(step * 100 / total_steps)
     file.seek(0)
-    file.write(progress.to_bytes(PROGRESS_BYTES, byteorder="big", signed=False))
+    if truncate:
+        file.truncate(0)
+    file.write(progress.to_bytes(BYTES, byteorder="big", signed=False))
     file.flush()

@@ -1,18 +1,20 @@
-from agents.train import *
+from agents.callbacks import StatusCallback, write_progress_to_file
+from agents.SingleDQNAgent import SingleDQNAgent
+from envs.SingleAssetEnv import SingleAssetEnv
+from stable_baselines3.common.env_checker import check_env
+
 from data.download import download
 from data.query import MissingData
 
-import pandas as pd
+from pandas import DataFrame
 from flask import Flask, request, jsonify, Response
-from stable_baselines3.common.logger import *
 from pathlib import Path
 from shutil import rmtree
-
 from enum import Enum
-import time
+from time import time_ns
+from json import dumps
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
 
 
 @app.route("/")
@@ -22,7 +24,7 @@ def index():
 
 @app.route("/agent_id")
 def agent_id():
-    return jsonify(agent_id=time.time_ns())
+    return jsonify(agent_id=time_ns())
 
 
 @app.route("/clear_agent", methods=["POST"])
@@ -96,7 +98,7 @@ def train():
             agent.learn(
                 num_train_steps,
                 callback=[
-                    TrainingStepCallback(
+                    StatusCallback(
                         Status,
                         str(agent_id) + "/" + TRAINING_STATUS_FILE_PATH,
                         num_train_steps,
@@ -141,25 +143,18 @@ def test():
         while True:
             action = agent.predict(obs)
             obs, reward, done, info = test_env.step(action)
-            write_progress_to_file(test_env.step_idx, len(test_env.df), fp)
+            write_progress_to_file(fp, test_env.step_idx, len(test_env.df))
             if done:
-                fp.seek(0)
-                fp.truncate(0)
-                fp.write(
-                    Status.DONE.value.to_bytes(
-                        INDEX_BYTES, byteorder="big", signed=False
-                    )
-                )
-                fp.flush()
+                write_progress_to_file(fp, Status.DONE.value, truncate=True)
                 fp.close()
                 break
 
         # TODO assert length of ledger and candles is the same (or not)
 
-        def generate_data(df: pd.DataFrame):
+        def generate_data(df: DataFrame):
             """Yields the whole ledger in one chunk, then yields every candle in order"""
 
-            yield '{"ledger":' + json.dumps(
+            yield '{"ledger":' + dumps(
                 dict(
                     balances=agent.env.ledger.balances,
                     timestamps=agent.env.ledger.dates,
