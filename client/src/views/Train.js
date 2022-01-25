@@ -4,7 +4,6 @@ import BasicDatePicker from '../components/BasicDatePicker';
 import Button from '@mui/material/Button';
 
 
-
 export default function Train(props) {
 
     const [symbol, setSymbol] = React.useState('');
@@ -22,9 +21,22 @@ export default function Train(props) {
             },
             body: JSON.stringify(config)
         });
-        props.onTrainEnd(response);
-        console.log(response); // TODO: new API for train, sample the istraining
-        return response
+        response.json().then(checkTrainStatus());
+    }
+
+    async function checkTrainStatus() {
+        const URL = 'training_status';
+        let done = false;
+        let interval = setInterval(async () => {
+            if (done) {
+                clearInterval(interval);
+            }
+            
+            // request training status
+            let response = await fetch(URL);
+            response.json().then( r => { console.log(r) } )
+            
+        }, 100);
     }
 
     function onTrainClick() {
