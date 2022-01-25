@@ -43,3 +43,7 @@
     transform: rotate(360deg);
   }
 }
+
+.loading-percentage {
+    margin-top: 20px;
+}

@@ -18,7 +18,7 @@ html, body {
     color: #393A3E;
 }
 
-.train-form {
+.config-modal {
     width: 100%;
     max-width: 600px;
     background: #fff;
@@ -28,6 +28,6 @@ html, body {
     flex-direction: column;
 }
 
-.train-form > div {
+.config-modal > div {
     margin-bottom: 32px;
 }
