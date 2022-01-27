@@ -10,7 +10,6 @@ export default function ConfigModal(props) {
     const [interval, _setInterval] = React.useState('');
     const [startDate, setStartDate] = React.useState('');
     const [endDate, setEndDate] = React.useState('');
-    const [newAgentId, setNewAgentId] = React.useState('');
 
     async function createAgent() {
         const URL = 'agent_id';
@@ -77,22 +76,22 @@ export default function ConfigModal(props) {
     }
 
     async function onTrainClick() {
-        let config = {
-            "symbol": symbol,
-            "interval": interval,
-            "start": startDate,
-            "end": endDate,
-            "initial_amount": 10000,
-            "commission": 0.00075,
-            "num_steps": 10000
-        }
-        props.onTrainClick();
-        let newAgent = await createAgent();
-        newAgent.json().then( async agentRes => {
-            let agentId = agentRes.agent_id;
-            // TODO: store new agent Id as state variable
-            config['agent_id'] = agentId;
-            console.log(config);
+        const agentRes = await fetch("agent_id");
+        agentRes.json().then( async res => {
+            let agentId = res.agent_id;
+            props.onTrainClick(agentId);
+
+            let config = {
+                "agent_id": agentId,
+                "symbol": symbol,
+                "interval": interval,
+                "start": startDate,
+                "end": endDate,
+                "initial_amount": 10000,
+                "commission": 0.00075,
+                "num_steps": 10000
+            }
+
             let trainedAgent = await trainAgent(config);
             trainedAgent.json().then( async () => {
                 await checkTrainStatus(agentId);
@@ -102,7 +101,7 @@ export default function ConfigModal(props) {
 
     async function onTestClick() {
         let config = {
-            "agent_id": newAgentId,
+            "agent_id": props.agentId,
             "symbol": symbol,
             "interval": interval,
             "start": startDate,
@@ -139,6 +138,7 @@ export default function ConfigModal(props) {
 
     return (
       <div className="config-modal">
+        { "agent id: " + props.agentId }
         <BasicSelect label="Coin" options={props.config.coins} handleChange={handleCoinSelect} />
         <BasicSelect label="Interval" options={props.config.intervals} handleChange={handleIntervalSelect} />
         <BasicDatePicker label="Start Date" handleChange={handleStartSelect} />

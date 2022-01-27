@@ -12,9 +12,11 @@ function App() {
     const [evaluation, setEvaluation] = React.useState(false);
     const [results, setResults] = React.useState(null);
     const [loadingStatus, setLoadingStatus] = React.useState(0);
+    const [agentId, setAgentId] = React.useState('');
 
-    function onTrainClick() {
+    function onTrainClick(newAgentId) {
         setLoading(true);
+        setAgentId(newAgentId);
     }
 
     function onTrainEnd() {
@@ -37,6 +39,7 @@ function App() {
         { !evaluation ?
             !loading ?
                 <ConfigModal config={config} 
+                    agentId={agentId}
                     mode={mode}
                     onTrainClick={onTrainClick}
                     onTrainEnd={onTrainEnd}
