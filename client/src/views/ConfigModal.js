@@ -138,7 +138,6 @@ export default function ConfigModal(props) {
 
     return (
       <div className="config-modal">
-        { "agent id: " + props.agentId }
         <BasicSelect label="Coin" options={props.config.coins} handleChange={handleCoinSelect} />
         <BasicSelect label="Interval" options={props.config.intervals} handleChange={handleIntervalSelect} />
         <BasicDatePicker label="Start Date" handleChange={handleStartSelect} />
