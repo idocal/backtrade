@@ -1,6 +1,6 @@
 import * as React from 'react';
 import ConfigModal from './views/ConfigModal';
-import Test from './views/Test';
+import Evaluation from './views/Evaluation';
 import Loading from './views/Loading';
 import './App.css';
 import config from './config';
@@ -47,7 +47,7 @@ function App() {
                     onTestEnd={onTestEnd}
                     setLoadingStatus={setLoadingStatus} /> :
                 <Loading percentage={loadingStatus} /> :
-            <Test results={results} />
+            <Evaluation results={results} />
         }
     </div>
     );
