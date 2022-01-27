@@ -5,7 +5,7 @@ export default function Evaluation(props) {
 
     return (
       <div className="evaluation">
-        {props.results}
+        {JSON.stringify(props.results.ledger.balances)}
       </div>
     )
 }
