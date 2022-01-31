@@ -1,5 +1,5 @@
 import * as React from 'react';
-import AreaChart from '../views/AreaChart';
+import AreaChart from '../components/AreaChart';
 import { parse } from 'date-fns';
 import { getTime } from 'date-fns';
 
