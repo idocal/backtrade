@@ -38,6 +38,7 @@ class SingleAssetEnv(Env):
             end=self.config["end"],
             interval=self.config["interval"],
         )
+        print(self.df)
         self.prev_candle = Candle.from_df(self.df.iloc[0])
         n_actions = len(Action)
         self.action_space = spaces.Discrete(n_actions)
@@ -48,8 +49,8 @@ class SingleAssetEnv(Env):
             high=np.append(self.candle_high_bound, 1)
         )  # OHLCV + is_trading
 
-    def plot_candles(self):
-        candles = Candles(self.df)
+    def plot_candles(self, num: int = np.inf):
+        candles = Candles(self.df[:num])
         candles.plot()
 
     def balance(self, asset_price):
@@ -103,15 +104,17 @@ class SingleAssetEnv(Env):
         return obs
 
     def step(self, action: Action):
-        logger.debug(f"Evaluating step {self.step_idx}/{len(self.df)}")
-        logger.debug(f"Taking action: {action}")
+        if self.step_idx % 100 == 0:
+            logger.debug(f"Evaluating candle {self.step_idx}/{len(self.df)}")
+            logger.debug(f"Taking action: {action}")
         candle = Candle.from_df(self.df.iloc[self.step_idx])
         is_legal_action = True
         reward = 0
         if action == Action.BUY:
             if self.curr_trade:
                 # cannot perform buy action while in position
-                logger.warning(f"Action {action} is illegal!")
+                if self.step_idx % 100 == 0:
+                    logger.warning(f"Action {action} is illegal!")
                 is_legal_action = False
                 reward = float('-inf')
             else:
@@ -120,7 +123,8 @@ class SingleAssetEnv(Env):
         elif action == Action.SELL:
             if self.curr_trade is None:
                 # cannot perform sell action while not in position
-                logger.warning(f"Action {action} is illegal!")
+                if self.step_idx % 100 == 0:
+                    logger.warning(f"Action {action} is illegal!")
                 is_legal_action = False
                 reward = float('-inf')
             else:

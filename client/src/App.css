@@ -1,0 +1,37 @@
+html, body {
+    width: 100%;
+    height: 100%;
+}
+
+#root {
+    height: 100%;
+}
+
+.App {
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #B8CFE9;
+    color: #393A3E;
+}
+
+.modal {
+    width: 100%;
+    max-width: 600px;
+    background: #fff;
+    padding: 32px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal > div {
+    margin-bottom: 32px;
+}
+
+.highcharts-credits {
+    display: none;
+}

@@ -1,6 +1,5 @@
 from typing import Type, Union, Optional, Dict, Any
 from agents.agent import SingleAgent
-from strategies.strategy import Strategy
 from envs.SingleAssetEnv import SingleAssetEnv
 from stable_baselines3 import DQN
 from stable_baselines3.common.base_class import BasePolicy
@@ -28,6 +27,7 @@ class SingleDQNAgent(SingleAgent):
 
 if __name__ == "__main__":
     import json
+
     c = json.load(open("config.json"))
     env = SingleAssetEnv(c)
     agent = SingleDQNAgent(env)

@@ -45,9 +45,6 @@ def download(symbols, intervals, start_time, end_time):
     end_time = timestamp_from_str(end_time)
     data_months = months_from_range(start_time, end_time)
 
-    # years = [i for i in range(start_time.year, end_time.year + 1)]
-    # months = [i for i in range(1, 13)]
-
     db_name = "ohlcv"
     symbols_usdt = [s + "USDT" for s in symbols]
 
