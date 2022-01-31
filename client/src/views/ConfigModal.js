@@ -11,15 +11,7 @@ export default function ConfigModal(props) {
     const [startDate, setStartDate] = React.useState('');
     const [endDate, setEndDate] = React.useState('');
 
-    async function createAgent() {
-        const URL = 'agent_id';
-        console.log('creating agent');
-        return await fetch(URL);
-    }
-
     async function trainAgent(config) {
-        console.log('training agent');
-        console.log(config);
         const URL = 'train';
         return await fetch(URL, {
             method: 'POST',
@@ -50,10 +42,8 @@ export default function ConfigModal(props) {
                 body: JSON.stringify({'agent_id': agentId})
             });
             response.json().then( r => {
-                console.log(r) 
                 props.setLoadingStatus(Math.min(r.training_status, 100));
                 if (r.complete) {
-                    console.log('complete');
                     done = true;
                 }
             })
@@ -63,8 +53,6 @@ export default function ConfigModal(props) {
 
     async function testAgent(config) {
         const URL = 'test';
-        console.log('testing agent with config:');
-        console.log(config);
         return await fetch(URL, {
             method: 'POST',
             headers: {
@@ -113,8 +101,6 @@ export default function ConfigModal(props) {
         props.onTestClick();
         let testRes = await testAgent(config);
         testRes.json().then( res => {
-            console.log('tested agent');
-            console.log(res);
             props.onTestEnd(res);
         })
     }
@@ -137,7 +123,7 @@ export default function ConfigModal(props) {
     }
 
     return (
-      <div className="config-modal">
+      <div className="modal">
         <BasicSelect label="Coin" options={props.config.coins} handleChange={handleCoinSelect} />
         <BasicSelect label="Interval" options={props.config.intervals} handleChange={handleIntervalSelect} />
         <BasicDatePicker label="Start Date" handleChange={handleStartSelect} />

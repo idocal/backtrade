@@ -20,7 +20,7 @@ function ledgerToChartData(ledger) {
 export default function Evaluation(props) {
 
     return (
-      <div className="evaluation">
+      <div className="evaluation modal">
         <AreaChart 
             data={ledgerToChartData(props.results.ledger)}
             title='Balance over time'

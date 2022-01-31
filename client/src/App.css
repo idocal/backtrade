@@ -18,7 +18,7 @@ html, body {
     color: #393A3E;
 }
 
-.config-modal {
+.modal {
     width: 100%;
     max-width: 600px;
     background: #fff;
@@ -28,6 +28,10 @@ html, body {
     flex-direction: column;
 }
 
-.config-modal > div {
+.modal > div {
     margin-bottom: 32px;
+}
+
+.highcharts-credits {
+    display: none;
 }
