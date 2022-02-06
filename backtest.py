@@ -1,7 +1,7 @@
 import json
 from candles import Candles, Candle
 from loguru import logger
-from strategies.ATRStrategy import ATRStrategy
+# from strategies.ATRStrategy import ATRStrategy
 from strategies.strategy import Strategy, Decision
 from typing import Type
 import plotly.graph_objects as go

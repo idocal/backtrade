@@ -11,8 +11,9 @@ from flask import Flask, request, jsonify, Response
 from pathlib import Path
 from shutil import rmtree
 from enum import Enum
-from time import time_ns
 from json import dumps
+from os import urandom
+
 
 app = Flask(__name__)
 
@@ -24,7 +25,7 @@ def index():
 
 @app.route("/agent_id")
 def agent_id():
-    return jsonify(agent_id=time_ns())
+    return jsonify(agent_id=int.from_bytes(urandom(24), byteorder='big'))
 
 
 @app.route("/clear_agent", methods=["POST"])
@@ -41,8 +42,8 @@ class Status(Enum):
 
 
 MODEL_FILE_PATH = "model"
-TRAINING_STATUS_FILE_PATH = "training_status"
-TESTING_STATUS_FILE_PATH = "testing_status"
+TRAIN_STATUS_FILE_PATH = "train_status"
+TEST_STATUS_FILE_PATH = "test_status"
 
 
 def get_status(param_name: str, path: str):
@@ -57,21 +58,21 @@ def get_status(param_name: str, path: str):
         return jsonify({param_name: Status.DID_NOT_START.value, "complete": False})
 
 
-@app.route("/training_status", methods=["POST"])
-def training_status():
+@app.route("/train_status", methods=["POST"])
+def train_status():
     if request.method == "POST":
         agent_id = request.get_json()["agent_id"]
         return get_status(
-            "training_status", str(agent_id) + "/" + TRAINING_STATUS_FILE_PATH
+            "train_status", str(agent_id) + "/" + TRAIN_STATUS_FILE_PATH
         )
 
 
-@app.route("/testing_status", methods=["POST"])
-def testing_status():
+@app.route("/test_status", methods=["POST"])
+def test_status():
     if request.method == "POST":
         agent_id = request.get_json()["agent_id"]
         return get_status(
-            "testing_status", str(agent_id) + "/" + TESTING_STATUS_FILE_PATH
+            "test_status", str(agent_id) + "/" + TEST_STATUS_FILE_PATH
         )
 
 
@@ -101,7 +102,7 @@ def train():
                 callback=[
                     StatusCallback(
                         Status,
-                        str(agent_id) + "/" + TRAINING_STATUS_FILE_PATH,
+                        str(agent_id) + "/" + TRAIN_STATUS_FILE_PATH,
                         num_train_steps,
                     ),
                 ],
@@ -135,12 +136,12 @@ def test():
             agent.load(str(agent_id) + "/" + MODEL_FILE_PATH)
         except FileNotFoundError:
             return Response(
-                "Agent model file not found, try training first.", status=500
+                "Agent model file not found, try train first.", status=500
             )
 
-        # TODO: respond to client before testing?
+        # TODO: respond to client before test?
 
-        fp = open(str(agent_id) + "/" + TESTING_STATUS_FILE_PATH, "wb")
+        fp = open(str(agent_id) + "/" + TEST_STATUS_FILE_PATH, "wb")
         while True:
             action = agent.predict(obs)
             obs, reward, done, info = test_env.step(action)

@@ -8,3 +8,8 @@ __pycache__
 *.zip
 *training_status
 *testing_status
+node_modules
+*.lock
+*.lock
+client/package-lock.json
+client/yarn.lock
