@@ -44,9 +44,7 @@ async def test(request: TestRequest):
     try:
         agent.load(str(agent_id) + "/" + MODEL_FILE_PATH)
     except FileNotFoundError:
-        return Response(
-            "Agent model file not found, try train first.", status=500
-        )
+        return Response("Agent model file not found, try train first.", status=500)
 
     # TODO: respond to client before test?
 
@@ -75,9 +73,7 @@ async def test(request: TestRequest):
         ) + ',"candles":{'
         for i in range(len(df) - 1):
             yield f'"{i}":' + df.iloc[i].to_json(orient="values") + ","
-        yield f'"{len(df) - 1}":' + df.iloc[len(df) - 1].to_json(
-            orient="values"
-        ) + "}}"
+        yield f'"{len(df) - 1}":' + df.iloc[len(df) - 1].to_json(orient="values") + "}}"
 
     return Response(generate_data(agent.env.df), mimetype="application/json")
 
@@ -106,6 +102,4 @@ def get_status(param_name: str, path: str):
 
 @router.post("/test/{agent_id}")
 async def train_status(agent_id: str):
-    return get_status(
-        "test_status", str(agent_id) + "/" + TEST_STATUS_FILE_PATH
-    )
+    return get_status("test_status", str(agent_id) + "/" + TEST_STATUS_FILE_PATH)

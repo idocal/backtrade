@@ -6,6 +6,7 @@ from data.download import download
 from data.query import MissingData
 
 from fastapi import APIRouter, BackgroundTasks
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from pathlib import Path
 from enum import Enum
@@ -35,6 +36,7 @@ def call_train(agent: SingleAgent, num_train_steps: int, agent_id: str):
             ),
         ],
     )
+
     agent.save(str(agent_id) + "/" + MODEL_FILE_PATH)
 
 
@@ -58,7 +60,7 @@ async def train(request: TrainRequest, background_tasks: BackgroundTasks):
 
     background_tasks.add_task(call_train, agent, num_train_steps, agent_id)
 
-    return {"agent_id": agent_id}
+    return JSONResponse(content=agent_id)
 
 
 class Status(Enum):
@@ -85,6 +87,8 @@ def get_status(param_name: str, path: str):
 
 @router.post("/train/{agent_id}")
 async def train_status(agent_id: str):
-    return get_status(
-        "train_status", str(agent_id) + "/" + TRAIN_STATUS_FILE_PATH
+    return JSONResponse(
+        content=get_status(
+            "train_status", str(agent_id) + "/" + TRAIN_STATUS_FILE_PATH
+        ),
     )
