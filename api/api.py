@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from secrets import token_hex
-from api.routers import train, test
+from routers import train, test
 
 app = FastAPI()
 
