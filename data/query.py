@@ -1,4 +1,4 @@
-from data import DB_NAME
+from data import DB_URL
 
 import datetime
 
@@ -17,7 +17,7 @@ def get_ohlcv(
     logger.info(f"Fetching local data for {asset}...")
 
     # create SQLite connection
-    conn = create_engine(f"sqlite:///{DB_NAME}.db")
+    conn = create_engine(DB_URL)
     metadata = MetaData()
     metadata.reflect(bind=conn)
 

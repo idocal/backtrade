@@ -1,5 +1,5 @@
 from .providers import get_provider
-from data import DB_NAME
+from data import DB_URL
 
 import time
 from sqlalchemy import create_engine
@@ -47,8 +47,6 @@ def download(
     end = timestamp_from_str(end)
     data_months = months_from_range(start, end)
 
-    db_name = DB_NAME
-
     # TODO: note that the code assume the use of USDT
     symbol_usdt = [s + "USDT" for s in symbol]
 
@@ -67,6 +65,6 @@ def download(
                 df = curr_provider.retrieve_data(curr_symbol, interval, year, month)
                 # index in sqlite
                 table_name = f"{symbol[i]}{interval}"  # TODO: symbol[i] instead of curr_symbol assumes use of USDT
-                engine = create_engine(f"sqlite:///{db_name}.db")
-                logger.info(f"Writing to database: {db_name} table: {table_name}")
+                engine = create_engine(DB_URL)
+                logger.info(f"Writing to database: {DB_URL} table: {table_name}")
                 df.to_sql(table_name, con=engine, if_exists="append")
