@@ -12,20 +12,18 @@ export default function Train(props) {
     const [agentId, setAgentId] = React.useState('');
     const navigate = useNavigate();
 
-    function onTrainEnd(newAgentId) {
-        console.log('trained agent: ' + newAgentId);
-        props.addAgent(newAgentId);
+    function onTrainEnd() {
         setLoading(false);
         navigate("/");
     }
 
     async function checkTrainStatus(newAgentId) {
-        const URL = 'training_status';
+        const URL = 'train/' + newAgentId;
         let done = false;
         let interval = setInterval(async () => {
             if (done) {
                 clearInterval(interval);
-                onTrainEnd(newAgentId);
+                onTrainEnd();
             }
             
             // request training status
@@ -39,7 +37,7 @@ export default function Train(props) {
             });
 
             response.json().then( r => {
-                setLoadingStatus(Math.min(r.training_status, 100));
+                setLoadingStatus(Math.min(r.train_status, 100));
                 if (r.complete) {
                     done = true;
                 }
@@ -65,7 +63,7 @@ export default function Train(props) {
         const agentRes = await fetch("agent_id");
         agentRes.json().then( async res => {
             // update config with newly created agent
-            let newAgentId = res.agent_id;
+            let newAgentId = res;
             setAgentId(newAgentId);
             config.agent_id = newAgentId;
 
