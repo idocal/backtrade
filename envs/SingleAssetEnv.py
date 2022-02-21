@@ -1,9 +1,9 @@
 import numpy as np
+import pandas as pd
 from loguru import logger
 from gym import spaces, Env
 from backtest import Ledger, Trade
 from enum import Enum
-from data.query import get_ohlcv
 from candles import Candle, Candles
 
 
@@ -22,7 +22,7 @@ class Action(Enum):
 
 
 class SingleAssetEnv(Env):
-    def __init__(self, config):
+    def __init__(self, config, data: pd.DataFrame):
         super(SingleAssetEnv, self).__init__()
         self.config = config
         self.cash = config["initial_amount"]
@@ -32,13 +32,7 @@ class SingleAssetEnv(Env):
         self.ledger = Ledger(self.config["initial_amount"])
         self.commission = config.get("commission", 0)
         self.step_idx = 1
-        self.df = get_ohlcv(
-            asset=self.config["symbol"],
-            start=self.config["start"],
-            end=self.config["end"],
-            interval=self.config["interval"],
-        )
-        print(self.df)
+        self.df = data
         self.prev_candle = Candle.from_df(self.df.iloc[0])
         n_actions = len(Action)
         self.action_space = spaces.Discrete(n_actions)

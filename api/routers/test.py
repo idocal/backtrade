@@ -1,36 +1,30 @@
 from agents import SingleDQNAgent
+from .request_template import RunRequest
 from envs import SingleAssetEnv
 from agents.callbacks import write_progress_to_file
 from stable_baselines3.common.env_checker import check_env
 
 from data.download import download
-from data.query import MissingData
+from data.query import MissingDataError
 
 from fastapi import APIRouter
-from pydantic import BaseModel
 from enum import Enum
 from pandas import DataFrame
 
 
-class TestRequest(BaseModel):
-    agent_id: str
-    symbol: str
-    interval: str
-    start: str
-    end: str
-    initial_amount: float
-    commission: float
+class TestRequest(RunRequest):
+    pass
 
 
 router = APIRouter()
 
 
-@router.post("/test/")
+@router.post("/test")
 async def test(request: TestRequest):
     agent_id = request.agent_id
     try:
         test_env = SingleAssetEnv(request.dict())
-    except MissingData:
+    except MissingDataError:
         download(
             [request.symbol],
             [request.interval],

@@ -1,25 +1,19 @@
+from .request_template import RunRequest
+
 from agents import StatusCallback, SingleDQNAgent, SingleAgent
 from envs import SingleAssetEnv
-from stable_baselines3.common.env_checker import check_env
-
 from data.download import download
-from data.query import MissingData
+from data.query import MissingDataError, get_ohlcv
 
+from stable_baselines3.common.env_checker import check_env
 from fastapi import APIRouter, BackgroundTasks
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel, Field
 from pathlib import Path
 from enum import Enum
 
 
-class TrainRequest(BaseModel):
-    agent_id: str
-    symbol: str
-    interval: str
-    start: str = Field(..., description="Date in %Y-%m-%d format")
-    end: str = Field(..., description="Date in %Y-%m-%d format")
-    initial_amount: float = Field(..., ge=0)
-    commission: float = Field(..., ge=0, lt=1)
+class TrainRequest(RunRequest):
+    pass
 
 
 router = APIRouter()
@@ -31,36 +25,37 @@ def call_train(agent: SingleAgent, num_train_steps: int, agent_id: str):
         callback=[
             StatusCallback(
                 Status,
-                str(agent_id) + "/" + TRAIN_STATUS_FILE_PATH,
+                "models" + "/" + str(agent_id) + "/" + TRAIN_STATUS_FILE_PATH,
                 num_train_steps,
             ),
         ],
     )
 
-    agent.save(str(agent_id) + "/" + MODEL_FILE_PATH)
+    agent.save("models" + "/" + str(agent_id))
 
 
-@router.post("/train/")
+@router.post("/train")
 async def train(request: TrainRequest, background_tasks: BackgroundTasks):
-    agent_id = request.agent_id
     try:
-        env = SingleAssetEnv(request.dict())
-    except MissingData:
+        df = get_ohlcv(request.symbol, request.start, request.end, request.interval)
+    except MissingDataError:
         download(
-            [request.symbol],
-            [request.interval],
+            request.provider,
+            request.symbol,
+            request.interval,
             request.start,
             request.end,
         )
-        env = SingleAssetEnv(request.dict())
+        df = get_ohlcv(request.symbol, request.start, request.end, request.interval)
+    env = SingleAssetEnv(request.dict(), df)
     check_env(env)
     agent = SingleDQNAgent(env)
     num_train_steps = len(env.df)
-    Path(str(agent_id)).mkdir(exist_ok=True)
+    Path("models" + "/" + str(request.agent_id)).mkdir(exist_ok=True)
 
-    background_tasks.add_task(call_train, agent, num_train_steps, agent_id)
+    background_tasks.add_task(call_train, agent, num_train_steps, request.agent_id)
 
-    return JSONResponse(content=agent_id)
+    return JSONResponse(content={"success": True, "content": request.agent_id})
 
 
 class Status(Enum):
@@ -89,6 +84,7 @@ def get_status(param_name: str, path: str):
 async def train_status(agent_id: str):
     return JSONResponse(
         content=get_status(
-            "train_status", str(agent_id) + "/" + TRAIN_STATUS_FILE_PATH
+            "train_status",
+            "models" + "/" + str(agent_id) + "/" + TRAIN_STATUS_FILE_PATH,
         ),
     )
