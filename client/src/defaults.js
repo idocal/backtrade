@@ -1,4 +1,4 @@
-const config = {
+const defaults = {
     "coins": [
         "BTC",
         "ETH",
@@ -14,4 +14,4 @@ const config = {
     ]
 }
 
-export default config
+export default defaults
