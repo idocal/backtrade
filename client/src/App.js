@@ -7,18 +7,11 @@ import './App.css';
 
 
 function App() {
-    const [agents, setAgents] = React.useState([]);
-
-    function addAgent(agentId) {
-        let newAgents = agents.push(agentId);
-        setAgents(newAgents);
-    }
-
     return (
     <div className="App">
         <Routes>
-            <Route path="/" element={ <Agents agents={agents} /> } />
-            <Route path="/train" element={ <Train addAgent={addAgent} /> } />
+            <Route path="/" element={ <Agents /> } />
+            <Route path="/train" element={ <Train /> } />
             <Route path="/test/:agentId" element={ <Test /> } />
         </Routes>
     </div>

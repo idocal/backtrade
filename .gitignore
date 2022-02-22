@@ -13,3 +13,4 @@ node_modules
 *.lock
 client/package-lock.json
 client/yarn.lock
+models/

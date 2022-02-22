@@ -1,3 +1,4 @@
+import os
 from agents import StatusCallback, SingleDQNAgent, SingleAgent
 from envs import SingleAssetEnv
 from stable_baselines3.common.env_checker import check_env
@@ -10,6 +11,11 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel, Field
 from pathlib import Path
 from enum import Enum
+
+MODEL_FILE_PATH = "model"
+MODEL_DIRECTORY = "models"
+TRAIN_STATUS_FILE_PATH = "train_status"
+TEST_STATUS_FILE_PATH = "test_status"
 
 
 class TrainRequest(BaseModel):
@@ -26,18 +32,25 @@ router = APIRouter()
 
 
 def call_train(agent: SingleAgent, num_train_steps: int, agent_id: str):
+    agent_dir = os.path.join(MODEL_DIRECTORY, str(agent_id))
+    model_filepath = os.path.join(agent_dir, MODEL_FILE_PATH)
+    status_filepath = os.path.join(agent_dir, TRAIN_STATUS_FILE_PATH)
+    Path(agent_dir).mkdir(exist_ok=True)
+
     agent.learn(
         num_train_steps,
         callback=[
             StatusCallback(
                 Status,
-                str(agent_id) + "/" + TRAIN_STATUS_FILE_PATH,
+                status_filepath,
                 num_train_steps,
             ),
         ],
     )
 
-    agent.save(str(agent_id) + "/" + MODEL_FILE_PATH)
+    # save agent model to dedicated directory
+    # TODO: this should be stored in a DB with URL
+    agent.save(model_filepath)
 
 
 @router.post("/train/")
@@ -56,7 +69,6 @@ async def train(request: TrainRequest, background_tasks: BackgroundTasks):
     check_env(env)
     agent = SingleDQNAgent(env)
     num_train_steps = len(env.df)
-    Path(str(agent_id)).mkdir(exist_ok=True)
 
     background_tasks.add_task(call_train, agent, num_train_steps, agent_id)
 
@@ -66,11 +78,6 @@ async def train(request: TrainRequest, background_tasks: BackgroundTasks):
 class Status(Enum):
     DONE = 200
     DID_NOT_START = -1
-
-
-MODEL_FILE_PATH = "model"
-TRAIN_STATUS_FILE_PATH = "train_status"
-TEST_STATUS_FILE_PATH = "test_status"
 
 
 def get_status(param_name: str, path: str):
@@ -87,8 +94,11 @@ def get_status(param_name: str, path: str):
 
 @router.post("/train/{agent_id}")
 async def train_status(agent_id: str):
+    agent_dir = os.path.join(MODEL_DIRECTORY, str(agent_id))
+    status_filepath = os.path.join(agent_dir, TRAIN_STATUS_FILE_PATH)
+
     return JSONResponse(
         content=get_status(
-            "train_status", str(agent_id) + "/" + TRAIN_STATUS_FILE_PATH
+            TRAIN_STATUS_FILE_PATH, status_filepath
         ),
     )

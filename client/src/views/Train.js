@@ -9,7 +9,6 @@ import './Train.css';
 export default function Train(props) {
     const [loading, setLoading] = React.useState(false);
     const [loadingStatus, setLoadingStatus] = React.useState(0);
-    const [agentId, setAgentId] = React.useState('');
     const navigate = useNavigate();
 
     function onTrainEnd() {
@@ -64,7 +63,6 @@ export default function Train(props) {
         agentRes.json().then( async res => {
             // update config with newly created agent
             let newAgentId = res;
-            setAgentId(newAgentId);
             config.agent_id = newAgentId;
 
             // train new agent
