@@ -24,7 +24,9 @@ async def test(request: TestRequest, db: Session = Depends(get_db)):
     while True:
         action = agent.predict(obs)
         obs, reward, done, info = env.step(action)
-        crud.update_agent(db, request.agent_id, "test_progress", env.step_idx / total_steps)
+        crud.update_agent(
+            db, request.agent_id, "test_progress", env.step_idx / total_steps
+        )
         if done:
             crud.update_agent(db, request.agent_id, "test_done", 1)
             break
@@ -35,7 +37,7 @@ async def test(request: TestRequest, db: Session = Depends(get_db)):
         return {
             "timestamps": [str(d) for d in agent.env.ledger.dates],
             "balances": agent.env.ledger.balances,
-            "candles": env.df.to_json(orient="values")
-                }
+            "candles": env.df.to_json(orient="values"),
+        }
 
     return JSONResponse(content={"success": True, "content": generate_data()})

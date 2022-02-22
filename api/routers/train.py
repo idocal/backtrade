@@ -19,15 +19,17 @@ router = APIRouter()
 def call_train(agent: SingleAgent, num_train_steps: int, agent_id: str, db: Session):
     agent.learn(
         num_train_steps,
-        callback=[
-            StatusCallbackDB(db, agent_id, num_train_steps)
-        ],
+        callback=[StatusCallbackDB(db, agent_id, num_train_steps)],
     )
     agent.save("models" + "/" + agent_id)
 
 
 @router.post("/train")
-async def train(request: TrainRequest, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+async def train(
+    request: TrainRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
     agent, env = initialize_agent_env(request)
     background_tasks.add_task(call_train, agent, len(env.df), request.agent_id, db)
 
