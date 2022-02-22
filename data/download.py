@@ -32,8 +32,8 @@ def months_from_range(start_time, end_time) -> List[str]:
 
 def download(
     provider_name: str,
-    symbol: Union[list[str], str],
-    intervals: Union[list[str], str],
+    symbol: Union[List[str], str],
+    intervals: Union[List[str], str],
     start: datetime.date,
     end: datetime.date,
 ):

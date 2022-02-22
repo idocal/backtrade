@@ -2,6 +2,7 @@ from .utils import initialize_agent_env
 from .request_template import RunRequest
 from db.database import get_db
 from db import crud
+
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -14,7 +15,7 @@ class TestRequest(RunRequest):
 router = APIRouter()
 
 
-@router.post("/test")
+@router.post("/api/test")
 async def test(request: TestRequest, db: Session = Depends(get_db)):
     agent, env = initialize_agent_env(request)
     agent.load("models" + "/" + request.agent_id)

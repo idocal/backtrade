@@ -6,22 +6,25 @@ from secrets import token_hex
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
-router = APIRouter()
-
 KEY_SIZE = 32
 
+router = APIRouter()
 
-@router.get("/create_agent")
+
+@router.get("/api/agent/create")
 async def create_agent(db: Session = Depends(get_db)):
     """
     Generate unique token
     """
     key = token_hex(KEY_SIZE)
     agent = crud.create_agent(db, key)
-    return JSONResponse(content={"success": True, "content": agent.id})
+    content = {
+        "id": agent.id
+    }
+    return JSONResponse(content={"success": True, "content": content})
 
 
-@router.post("/agent_status/{agent_id}")
+@router.post("/api/agent/status/{agent_id}")
 async def agent_status(agent_id: str, db: Session = Depends(get_db)):
     agent = crud.get_agent(db, agent_id)
     return JSONResponse(content={"success": True, "content": agent.as_dict()})

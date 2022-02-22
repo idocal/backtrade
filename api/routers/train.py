@@ -1,12 +1,11 @@
 from .request_template import RunRequest
 from agents import SingleAgent, StatusCallbackDB
 from db.database import get_db
+from .utils import initialize_agent_env
 
 from fastapi import APIRouter, BackgroundTasks, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
-
-from .utils import initialize_agent_env
 
 
 class TrainRequest(RunRequest):
@@ -24,7 +23,7 @@ def call_train(agent: SingleAgent, num_train_steps: int, agent_id: str, db: Sess
     agent.save("models" + "/" + agent_id)
 
 
-@router.post("/train")
+@router.post("/api/train")
 async def train(
     request: TrainRequest,
     background_tasks: BackgroundTasks,
