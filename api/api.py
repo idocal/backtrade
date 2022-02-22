@@ -1,9 +1,14 @@
+from db.database import engine, Base
 from routers import train, test, agent
 from data.query import MissingDataError
 from data.providers import DownloadError
 
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+
+
+Base.metadata.create_all(bind=engine)
+
 
 app = FastAPI()
 
