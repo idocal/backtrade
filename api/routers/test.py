@@ -2,7 +2,6 @@ from .utils import initialize_agent_env
 from .request_template import RunRequest
 from db.database import get_db
 from db import crud
-
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
@@ -33,12 +32,10 @@ async def test(request: TestRequest, db: Session = Depends(get_db)):
     # TODO assert length of ledger and candles is the same (or not)
 
     def generate_data():
-        return {"ledger":
-            dict(
-                balances=agent.env.ledger.balances,
-                timestamps=agent.env.ledger.dates,
-            )
-            , "candles": env.df.to_json(orient="values")
-        }
+        return {
+            "timestamps": [str(d) for d in agent.env.ledger.dates],
+            "balances": agent.env.ledger.balances,
+            "candles": env.df.to_json(orient="values")
+                }
 
     return JSONResponse(content={"success": True, "content": generate_data()})
