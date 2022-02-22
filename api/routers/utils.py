@@ -4,7 +4,6 @@ from data.query import MissingDataError
 from data.download import download
 from envs.SingleAssetEnv import SingleAssetEnv
 from agents.SingleDQNAgent import SingleDQNAgent
-from db import crud
 
 from stable_baselines3.common.env_checker import check_env
 
