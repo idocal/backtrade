@@ -2,6 +2,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 from enum import Enum
 from typing import Type, BinaryIO
 from sqlalchemy.orm import Session
+from db import crud
 
 
 class ProgressBar(BaseCallback):
@@ -62,16 +63,18 @@ def write_progress_to_file(
 
 
 class StatusCallbackDB(BaseCallback):
-    def __init__(self, db: Session, table_name: str, num_train_steps: int):
+    def __init__(self, db: Session, agent_id: str, num_train_steps: int):
         super(StatusCallbackDB, self).__init__()
-
+        self.db = db
+        self.agent_id = agent_id
         self.num_train_steps = num_train_steps
 
     def _on_step(self) -> bool:
-        pass
+        crud.update_agent(self.db, self.agent_id, "train_progress", self.num_timesteps / self.num_train_steps)
+        return True
 
     def _on_training_start(self) -> None:
-        pass
+        crud.update_agent(self.db, self.agent_id, "train_progress", 0)
 
     def _on_training_end(self) -> None:
-        pass
+        crud.update_agent(self.db, self.agent_id, "train_done", 1)

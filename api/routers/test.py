@@ -7,9 +7,13 @@ from stable_baselines3.common.env_checker import check_env
 from data.download import download
 from data.query import MissingDataError
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from enum import Enum
 from pandas import DataFrame
+from sqlalchemy.orm import Session
+from db.database import get_db
+
+from .utils import initialize_agent_env
 
 
 class TestRequest(RunRequest):
@@ -20,36 +24,18 @@ router = APIRouter()
 
 
 @router.post("/test")
-async def test(request: TestRequest):
-    agent_id = request.agent_id
-    try:
-        test_env = SingleAssetEnv(request.dict())
-    except MissingDataError:
-        download(
-            [request.symbol],
-            [request.interval],
-            request.start,
-            request.end,
-        )
-        test_env = SingleAssetEnv(request.dict())
-    check_env(test_env)
-    obs = test_env.reset()
-    agent = SingleDQNAgent(test_env)
-    try:
-        agent.load(str(agent_id) + "/" + MODEL_FILE_PATH)
-    except FileNotFoundError:
-        return Response("Agent model file not found, try train first.", status=500)
+async def test(request: TestRequest, db: Session = Depends(get_db)):
+    agent, env = initialize_agent_env(request)
+    agent.load("models" + "/" + request.agent_id)
+    obs = env.reset()
+    total_steps = len(env.df)
 
-    # TODO: respond to client before test?
-
-    fp = open(str(agent_id) + "/" + TEST_STATUS_FILE_PATH, "wb")
     while True:
         action = agent.predict(obs)
-        obs, reward, done, info = test_env.step(action)
-        write_progress_to_file(fp, test_env.step_idx, len(test_env.df))
+        obs, reward, done, info = env.step(action)
+        crud.update_agent(db, request.agent_id, "test_progress", env.step_idx / total_steps)
         if done:
-            write_progress_to_file(fp, Status.DONE.value)
-            fp.close()
+            crud.update_agent(db, request.agent_id, "test_done", 1)
             break
 
     # TODO assert length of ledger and candles is the same (or not)
@@ -70,30 +56,3 @@ async def test(request: TestRequest):
         yield f'"{len(df) - 1}":' + df.iloc[len(df) - 1].to_json(orient="values") + "}}"
 
     return Response(generate_data(agent.env.df), mimetype="application/json")
-
-
-class Status(Enum):
-    DONE = 200
-    DID_NOT_START = -1
-
-
-MODEL_FILE_PATH = "model"
-TRAIN_STATUS_FILE_PATH = "train_status"
-TEST_STATUS_FILE_PATH = "test_status"
-
-
-def get_status(param_name: str, path: str):
-    try:
-        fp = open(path, "rb")
-        st = int.from_bytes(fp.read(), byteorder="big")
-        fp.close()
-        complete = True if st == Status.DONE.value else False
-        return {param_name: st, "complete": complete}
-    except FileNotFoundError:
-        """If haven't trained yet"""
-        return {param_name: Status.DID_NOT_START.value, "complete": False}
-
-
-@router.post("/test/{agent_id}")
-async def train_status(agent_id: str):
-    return get_status("test_status", str(agent_id) + "/" + TEST_STATUS_FILE_PATH)
