@@ -53,7 +53,7 @@ def call_train(agent: SingleAgent, num_train_steps: int, agent_id: str):
     agent.save(model_filepath)
 
 
-@router.post("/train/")
+@router.post("/api/train")
 async def train(request: TrainRequest, background_tasks: BackgroundTasks):
     agent_id = request.agent_id
     try:
@@ -92,7 +92,7 @@ def get_status(param_name: str, path: str):
         return {param_name: Status.DID_NOT_START.value, "complete": False}
 
 
-@router.post("/train/{agent_id}")
+@router.post("/api/train/{agent_id}")
 async def train_status(agent_id: str):
     agent_dir = os.path.join(MODEL_DIRECTORY, str(agent_id))
     status_filepath = os.path.join(agent_dir, TRAIN_STATUS_FILE_PATH)

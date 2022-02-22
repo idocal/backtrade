@@ -32,7 +32,7 @@ async def agent_id():
     return JSONResponse(content=token_hex(32))
 
 
-@app.get("/agents")
+@app.get("/api/agents")
 async def get_agents():
     dirs = [f.path for f in os.scandir(MODELS_DIR) if f.is_dir()]
     agents = [pathlib.PurePath(d).name for d in dirs]

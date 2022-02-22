@@ -17,7 +17,7 @@ export default function Train(props) {
     }
 
     async function checkTrainStatus(newAgentId) {
-        const URL = 'train/' + newAgentId;
+        const URL = '/api/train/' + newAgentId;
         let done = false;
         let interval = setInterval(async () => {
             if (done) {
@@ -46,7 +46,7 @@ export default function Train(props) {
     }
 
     async function trainAgent(config) {
-        const URL = 'train';
+        const URL = '/api/train';
         return await fetch(URL, {
             method: 'POST',
             headers: {

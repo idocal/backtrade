@@ -10,7 +10,7 @@ function App() {
     return (
     <div className="App">
         <Routes>
-            <Route path="/" element={ <Agents /> } />
+            <Route exact path="/" element={ <Agents /> } />
             <Route path="/train" element={ <Train /> } />
             <Route path="/test/:agentId" element={ <Test /> } />
         </Routes>

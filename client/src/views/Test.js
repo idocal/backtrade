@@ -18,7 +18,9 @@ export default function Test(props) {
     }
 
     async function testAgent(config) {
-        const URL = 'test';
+        console.log(config);
+        config['agent_id'] = agentId;
+        const URL = '/api/test';
         return await fetch(URL, {
             method: 'POST',
             headers: {

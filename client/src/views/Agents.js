@@ -10,7 +10,7 @@ function Agents(props) {
     React.useEffect(() => {
       // declare the async data fetching function
       const fetchData = async () => {
-        const data = await fetch('agents');
+        const data = await fetch('api/agents');
         const json = await data.json();
         setAgents(json.agents);
       }

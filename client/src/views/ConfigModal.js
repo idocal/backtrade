@@ -6,7 +6,7 @@ import Button from '@mui/material/Button';
 
 export default function ConfigModal(props) {
 
-    const [symbol, setSymbol] = React.useState('');
+    const [symbol, setSymbol] = React.useState('BTC');
     const [interval, _setInterval] = React.useState('');
     const [startDate, setStartDate] = React.useState('');
     const [endDate, setEndDate] = React.useState('');

@@ -1,3 +1,4 @@
+import os
 from agents import SingleDQNAgent
 from envs import SingleAssetEnv
 from agents.callbacks import write_progress_to_file
@@ -10,6 +11,17 @@ from fastapi import APIRouter
 from pydantic import BaseModel
 from enum import Enum
 from pandas import DataFrame
+
+
+MODELS_DIRECTORY = "models"
+MODEL_FILE_PATH = "model"
+TRAIN_STATUS_FILE_PATH = "train_status"
+TEST_STATUS_FILE_PATH = "test_status"
+
+
+class Status(Enum):
+    DONE = 200
+    DID_NOT_START = -1
 
 
 class TestRequest(BaseModel):
@@ -25,9 +37,11 @@ class TestRequest(BaseModel):
 router = APIRouter()
 
 
-@router.post("/test/")
+@router.post("/api/test")
 async def test(request: TestRequest):
+    return {"success": True}
     agent_id = request.agent_id
+    agent_filepath = os.path.join(MODELS_DIRECTORY, agent_id, MODEL_FILE_PATH)
     try:
         test_env = SingleAssetEnv(request.dict())
     except MissingData:
@@ -42,13 +56,13 @@ async def test(request: TestRequest):
     obs = test_env.reset()
     agent = SingleDQNAgent(test_env)
     try:
-        agent.load(str(agent_id) + "/" + MODEL_FILE_PATH)
+        agent.load(agent_filepath)
     except FileNotFoundError:
         return Response("Agent model file not found, try train first.", status=500)
 
     # TODO: respond to client before test?
 
-    fp = open(str(agent_id) + "/" + TEST_STATUS_FILE_PATH, "wb")
+    fp = open(agent_filepath, "wb")
     while True:
         action = agent.predict(obs)
         obs, reward, done, info = test_env.step(action)
@@ -78,16 +92,6 @@ async def test(request: TestRequest):
     return Response(generate_data(agent.env.df), mimetype="application/json")
 
 
-class Status(Enum):
-    DONE = 200
-    DID_NOT_START = -1
-
-
-MODEL_FILE_PATH = "model"
-TRAIN_STATUS_FILE_PATH = "train_status"
-TEST_STATUS_FILE_PATH = "test_status"
-
-
 def get_status(param_name: str, path: str):
     try:
         fp = open(path, "rb")
@@ -100,6 +104,6 @@ def get_status(param_name: str, path: str):
         return {param_name: Status.DID_NOT_START.value, "complete": False}
 
 
-@router.post("/test/{agent_id}")
+@router.post("/api/test/{agent_id}")
 async def train_status(agent_id: str):
     return get_status("test_status", str(agent_id) + "/" + TEST_STATUS_FILE_PATH)
