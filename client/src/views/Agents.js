@@ -4,15 +4,15 @@ import Button from '@mui/material/Button';
 import './Agents.css';
 
 
-function Agents(props) {
+function Agents() {
 
     const [agents, setAgents] = React.useState([]);
     React.useEffect(() => {
       // declare the async data fetching function
       const fetchData = async () => {
-        const data = await fetch('api/agents');
+        const data = await fetch('/api/agent/all');
         const json = await data.json();
-        setAgents(json.agents);
+        setAgents(json.content);
       }
 
       // call the function
@@ -23,10 +23,10 @@ function Agents(props) {
 
     return (
         <div className="agents">
-            { agents.map( (agentId, i) => {
+            { agents.map( (agent, i) => {
                 return (
                     <div className="agent" key={i}>
-                        <Link to={ 'test/' + agentId }>
+                        <Link to={ 'test/' + agent.id }>
                             { 'Agent #' + (i + 1) }
                         </Link>
                     </div>

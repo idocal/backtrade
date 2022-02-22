@@ -18,11 +18,12 @@ function ledgerToChartData(ledger) {
 }
 
 export default function Evaluation(props) {
+    console.log(props.results);
 
     return (
       <div className="evaluation modal">
         <AreaChart 
-            data={ledgerToChartData(props.results.ledger)}
+            data={ledgerToChartData(props.results)}
             title='Balance over time'
             metric='Balance'
         />

@@ -3,9 +3,10 @@ import ConfigModal from './ConfigModal';
 import defaults from '../defaults';
 import Loading from './Loading';
 import { useParams } from 'react-router-dom';
+import Evaluation from './Evaluation';
 
 
-export default function Test(props) {
+export default function Test() {
     const [loading, setLoading] = React.useState(false);
     const [loadingStatus, setLoadingStatus] = React.useState(0);
     const [results, setResults] = React.useState(null);
@@ -14,7 +15,7 @@ export default function Test(props) {
 
     function onTestEnd(res) {
         setLoading(false);
-        setResults(res);
+        setResults(res.content);
     }
 
     async function testAgent(config) {
@@ -43,10 +44,12 @@ export default function Test(props) {
         <div className="test">
         { 
             !loading ?
-                <ConfigModal defaults={defaults} 
-                    mode={'test'}
-                    onClick={onTestClick}
-                    setLoadingStatus={setLoadingStatus} />
+                results === null ?
+                    <ConfigModal defaults={defaults} 
+                        mode={'test'}
+                        onClick={onTestClick}
+                        setLoadingStatus={setLoadingStatus} /> :
+                <Evaluation results={ results }/>
             :
                 <Loading percentage={loadingStatus} /> 
         }

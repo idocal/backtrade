@@ -24,6 +24,16 @@ async def create_agent(db: Session = Depends(get_db)):
     return JSONResponse(content={"success": True, "content": content})
 
 
+@router.get("/api/agent/all")
+async def all_agents(db: Session = Depends(get_db)):
+    """
+    Gets a list of all agents
+    """
+    agents = crud.get_all_agents(db)
+    agents = [a.as_dict() for a in agents]
+    return JSONResponse(content={"success": True, "content": agents})
+
+
 @router.post("/api/agent/status/{agent_id}")
 async def agent_status(agent_id: str, db: Session = Depends(get_db)):
     agent = crud.get_agent(db, agent_id)
