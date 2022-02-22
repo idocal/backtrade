@@ -1,26 +1,16 @@
+from .providers import get_provider
+from data import DB_URL
+
 import time
-from io import BytesIO
-from zipfile import ZipFile
-from urllib.request import urlopen
-import pandas as pd
 from sqlalchemy import create_engine
 from loguru import logger
-from datetime import datetime
-import argparse
-from typing import List
-
-BASE_URL = "https://data.binance.vision/data/spot/monthly/klines"
+import datetime
+from typing import List, Union
 
 
-def timestamp_from_str(date: str) -> datetime:
-    try:
-        date = time.strptime(date, "%m-%Y")
-    except ValueError:
-        date = time.strptime(date, "%Y-%m-%d")
-
-    date = time.struct_time(date)
-    date = time.mktime(date)
-    return datetime.fromtimestamp(date)
+def timestamp_from_str(date: datetime.date) -> datetime.datetime:
+    date = time.mktime(date.timetuple())
+    return datetime.datetime.fromtimestamp(date)
 
 
 def months_from_range(start_time, end_time) -> List[str]:
@@ -40,72 +30,41 @@ def months_from_range(start_time, end_time) -> List[str]:
     return months
 
 
-def download(symbols, intervals, start_time, end_time):
-    start_time = timestamp_from_str(start_time)
-    end_time = timestamp_from_str(end_time)
-    data_months = months_from_range(start_time, end_time)
+def download(
+    provider_name: str,
+    symbol: Union[List[str], str],
+    intervals: Union[List[str], str],
+    start: datetime.date,
+    end: datetime.date,
+):
+    if type(symbol) == str:
+        symbol = [symbol]
 
-    db_name = "ohlcv"
-    symbols_usdt = [s + "USDT" for s in symbols]
+    if type(intervals) == str:
+        intervals = [intervals]
+
+    start = timestamp_from_str(start)
+    end = timestamp_from_str(end)
+    data_months = months_from_range(start, end)
+
+    # TODO: note that the code assume the use of USDT
+    symbol_usdt = [s + "USDT" for s in symbol]
 
     # download and index data in loop
-    logger.info(f"Importing data of coins: {symbols}")
-    for i in range(len(symbols)):
-        logger.info(f"Coin {i + 1}/{len(symbols)}")
-        s = symbols_usdt[i]
+    logger.info(f"Importing data of coins: {symbol}")
+    for i in range(len(symbol)):
+        logger.info(f"Coin {i + 1}/{len(symbol)}")
+        curr_symbol = symbol_usdt[i]  # TODO: USDT
         for interval in intervals:
             for data_month in data_months:
                 month, year = data_month.split("-")
 
-                # define binance url
-                filename = f"{s}-{interval}-{year}-{month}"
-                url = f"{BASE_URL}/{s}/{interval}/{filename}.zip"
-                csv_filename = f"{filename}.csv"
-                table_name = f"{symbols[i]}{interval}"
-                logger.info(f"Reading from url: {url}")
-
-                # retrieve zip file from binance
-                resp = urlopen(url)
-                zf = ZipFile(BytesIO(resp.read()))
-
-                # read csv file in zip
-                df = pd.read_csv(zf.open(csv_filename), header=None)
-                df.drop(df.columns[6:], axis=1, inplace=True)
-                df.columns = ["Timestamp", "Open", "High", "Low", "Close", "Volume"]
-
-                # convert unix timestamp to datetime
-                df["Timestamp"] = df["Timestamp"].apply(
-                    lambda t: datetime.utcfromtimestamp(t / 1000)
-                )
-
+                # retrieve data file from curr_provider
+                # NOTE: retrieve monthly data
+                curr_provider = get_provider(provider_name, logger)
+                df = curr_provider.retrieve_data(curr_symbol, interval, year, month)
                 # index in sqlite
-                engine = create_engine(f"sqlite:///{db_name}.db")
-                logger.info(f"Writing to database: {db_name} table: {table_name}")
+                table_name = f"{symbol[i]}{interval}"  # TODO: symbol[i] instead of curr_symbol assumes use of USDT
+                engine = create_engine(DB_URL)
+                logger.info(f"Writing to database: {DB_URL} table: {table_name}")
                 df.to_sql(table_name, con=engine, if_exists="append")
-
-
-if __name__ == "__main__":
-    # parse user arguments
-    parser = argparse.ArgumentParser(description="Download Binance data")
-    parser.add_argument(
-        "-c", "--coins", type=str, nargs="+", help="List of coins to download"
-    )
-    parser.add_argument("-i", "--interval", type=str, help="Interval between each tick")
-    parser.add_argument(
-        "-s", "--start", type=str, help="Start day of trade, format is MM-YYYY"
-    )
-    parser.add_argument(
-        "-e", "--end", type=str, help="End day of trade, format is MM-YYYY"
-    )
-    args = parser.parse_args()
-
-    # define basic parameters to download
-    all_symbols = ["BTC", "ETH", "ETC", "BNB", "XRP", "LTC"]
-    all_intervals = ["1m", "5m", "15m", "1h", "4h", "1d"]
-
-    intervals = [args.interval] if args.interval else all_intervals
-    symbols = args.coins if args.coins else all_symbols
-    start_time = args.start
-    end_time = args.end
-
-    download(symbols, intervals, start_time, end_time)
