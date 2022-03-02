@@ -1,6 +1,5 @@
 from sqlalchemy.orm import Session
-
-from . import models
+import models
 
 
 def get_agent(db: Session, agent_id: str):

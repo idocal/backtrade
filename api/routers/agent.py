@@ -1,5 +1,5 @@
-from db.database import get_db
-from db import crud
+from api.db.database import get_db
+from api.db import crud
 
 from fastapi import APIRouter, Depends
 from secrets import token_hex

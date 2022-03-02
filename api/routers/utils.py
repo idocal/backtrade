@@ -1,4 +1,4 @@
-from .request_template import RunRequest
+from .schemas import RunRequest
 from data.query import get_ohlcv
 from data.query import MissingDataError
 from data.download import download
