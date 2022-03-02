@@ -1,4 +1,4 @@
-from db.database import engine, Base
+from api.db.database import Base, engine
 from routers import train, test, agent
 from data.query import MissingDataError
 from data.providers import DownloadError
@@ -7,8 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 
-
-Base.metadata.create_all(bind=engine)
+# Base.metadata.create_all(engine)
 
 
 app = FastAPI()
