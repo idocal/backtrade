@@ -14,12 +14,24 @@ router = APIRouter()
 @router.get("/api/agent/create")
 async def create_agent(db: Session = Depends(get_db)):
     """
-    Generate unique token
+    Create new agent
     """
     key = token_hex(KEY_SIZE)
     agent = crud.create_agent(db, key)
     content = {
         "id": agent.id
+    }
+    return JSONResponse(content={"success": True, "content": content})
+
+
+@router.get("/api/agent/delete/{agent_id}")
+async def delete_agent(agent_id: str, db: Session = Depends(get_db)):
+    """
+    Deletes an agent
+    """
+    crud.delete_agent(db, agent_id)
+    content = {
+        "id": agent_id
     }
     return JSONResponse(content={"success": True, "content": content})
 
