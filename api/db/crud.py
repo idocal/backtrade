@@ -29,8 +29,6 @@ def create_agent(db: Session, agent_id: str):
 
 def delete_agent(db: Session, agent_id: str):
     db_agent = get_agent(db, agent_id)
-    print(agent_id)
-    print(db_agent)
     db.delete(db_agent)
     db.commit()
     return
