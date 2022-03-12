@@ -2,12 +2,13 @@ import * as React from 'react';
 import BasicSelect from '../components/BasicSelect';
 import BasicDatePicker from '../components/BasicDatePicker';
 import Button from '@mui/material/Button';
+import MultipleSelectChip from '../components/MultipleSelectChip';
 
 const PROVIDER = 'binance';
 
 export default function ConfigModal(props) {
 
-    const [symbol, setSymbol] = React.useState('BTC');
+    const [symbol, setSymbol] = React.useState([]);
     const [interval, _setInterval] = React.useState('');
     const [startDate, setStartDate] = React.useState('');
     const [endDate, setEndDate] = React.useState('');
@@ -45,7 +46,8 @@ export default function ConfigModal(props) {
     return (
       <div className="modal">
         { props.mode !== 'test' &&
-            <BasicSelect label="Coin" options={props.defaults.coins} handleChange={handleCoinSelect} />
+            // <BasicSelect label="Coin" options={props.defaults.coins} handleChange={handleCoinSelect} />
+            <MultipleSelectChip vals={props.defaults.coins} label="Coin" handleSelect={handleCoinSelect}/>
         }
         <BasicSelect label="Interval" options={props.defaults.intervals} handleChange={handleIntervalSelect} />
         <BasicDatePicker label="Start Date" handleChange={handleStartSelect} />
