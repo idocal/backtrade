@@ -7,6 +7,9 @@ from fastapi import APIRouter, BackgroundTasks, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 
+from api.worker import train_task
+from api.db import crud
+
 
 class TrainRequest(RunRequest):
     pass
@@ -15,21 +18,21 @@ class TrainRequest(RunRequest):
 router = APIRouter()
 
 
-def call_train(agent: SingleAgent, num_train_steps: int, agent_id: str, db: Session):
-    agent.learn(
-        num_train_steps,
-        callback=[StatusCallbackDB(db, agent_id, num_train_steps)],
-    )
-    agent.save("models" + "/" + agent_id)
+# def task_train(agent: SingleAgent, num_train_steps: int, agent_id: str, db: Session):
+#     agent.learn(
+#         num_train_steps,
+#         callback=[StatusCallbackDB(db, agent_id, num_train_steps)],
+#     )
+#     agent.save("models" + "/" + agent_id)
 
 
 @router.post("/api/train")
 async def train(
-    request: TrainRequest,
-    background_tasks: BackgroundTasks,
-    db: Session = Depends(get_db),
+        request: TrainRequest,
+        db: Session = Depends(get_db),
 ):
-    agent, env = initialize_agent_env(request)
-    background_tasks.add_task(call_train, agent, len(env.df), request.agent_id, db)
+
+    task = train_task.delay(request.dict())
+    crud.update_agent(db, request.agent_id, "task_id", task.id)
 
     return JSONResponse(content={"success": True, "content": request.agent_id})

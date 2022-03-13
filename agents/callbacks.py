@@ -1,6 +1,6 @@
 from stable_baselines3.common.callbacks import BaseCallback
 from sqlalchemy.orm import Session
-from db import crud
+from api.db import crud
 
 
 class StatusCallbackDB(BaseCallback):

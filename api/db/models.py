@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, Column, String, Float
+from sqlalchemy import Integer, Column, String, Float, PickleType
 
 from .database import Base
 
@@ -11,6 +11,8 @@ class Agent(Base):
     train_done = Column(Integer, default=0)
     test_progress = Column(Float, default=-1.0)
     test_done = Column(Integer, default=0)
+    task_id = Column(String, default="")
+    symbols = Column(PickleType, default=[])
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
