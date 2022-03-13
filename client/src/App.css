@@ -29,7 +29,8 @@ html, body {
 }
 
 .modal > div {
-    margin-bottom: 32px;
+    margin: 0 0 32px 0;
+    width: 100%;
 }
 
 .highcharts-credits {

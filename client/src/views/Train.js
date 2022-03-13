@@ -47,6 +47,7 @@ export default function Train() {
     }
 
     async function trainAgent(config) {
+        console.log(config);
         const URL = '/api/train';
         return await fetch(URL, {
             method: 'POST',

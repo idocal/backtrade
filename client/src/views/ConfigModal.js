@@ -46,7 +46,6 @@ export default function ConfigModal(props) {
     return (
       <div className="modal">
         { props.mode !== 'test' &&
-            // <BasicSelect label="Coin" options={props.defaults.coins} handleChange={handleCoinSelect} />
             <MultipleSelectChip vals={props.defaults.coins} label="Coin" handleSelect={handleCoinSelect}/>
         }
         <BasicSelect label="Interval" options={props.defaults.intervals} handleChange={handleIntervalSelect} />
