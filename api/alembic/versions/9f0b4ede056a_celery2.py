@@ -10,8 +10,8 @@ import sqlalchemy as sa
 from api.db.models import Agent
 
 # revision identifiers, used by Alembic.
-revision = '9f0b4ede056a'
-down_revision = 'cb6b7cfd0d30'
+revision = "9f0b4ede056a"
+down_revision = "cb6b7cfd0d30"
 branch_labels = None
 depends_on = None
 
@@ -24,4 +24,3 @@ def upgrade():
 
 def downgrade():
     op.drop_table(Agent.__tablename__)
-

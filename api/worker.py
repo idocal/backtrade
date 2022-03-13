@@ -48,7 +48,10 @@ def test_task(self, request):
         action = agent.predict(obs)
         obs, reward, done, info = env.step(action)
         crud.update_agent(
-            self.session, request["agent_id"], "test_progress", env.step_idx / total_steps
+            self.session,
+            request["agent_id"],
+            "test_progress",
+            env.step_idx / total_steps,
         )
         if done:
             crud.update_agent(self.session, request["agent_id"], "test_done", 1)

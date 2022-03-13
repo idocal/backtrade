@@ -20,9 +20,7 @@ async def create_agent(db: Session = Depends(get_db)):
     """
     key = token_hex(KEY_SIZE)
     agent = crud.create_agent(db, key)
-    content = {
-        "id": agent.id
-    }
+    content = {"id": agent.id}
     return JSONResponse(content={"success": True, "content": content})
 
 
@@ -49,6 +47,7 @@ async def agent_result(agent_id: str, db: Session = Depends(get_db)):
     result = AsyncResult(task_id)
     data = result.get()
     return JSONResponse(content={"success": True, "content": data})
+
 
 # @router.post("/update_agent/{agent_id}/{attr}/{val}")
 # async def update_agent(agent_id: str, attr: str, val, db: Session = Depends(get_db)):

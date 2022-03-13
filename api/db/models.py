@@ -13,7 +13,13 @@ class Agent(Base):
     test_done = Column(Integer, default=0)
     task_id = Column(String, default="")
     symbols = Column(PickleType, default=[])
-
+    train_interval = Column(String)
+    train_start = Column(String)
+    train_end = Column(String)
+    test_interval = Column(String)
+    test_start = Column(String)
+    test_end = Column(String)
+    test_ledger = Column(PickleType)
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}

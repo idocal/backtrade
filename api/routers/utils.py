@@ -16,11 +16,7 @@ def initialize_agent_env(request: dict):
         df = get_ohlcv(request["symbol"], start, end, request["interval"])
     except MissingDataError:
         download(
-            request["provider"],
-            request["symbol"],
-            request["interval"],
-            start,
-            end
+            request["provider"], request["symbol"], request["interval"], start, end
         )
         df = get_ohlcv(request["symbol"], start, end, request["interval"])
     env = SingleAssetEnv(request, df)

@@ -24,6 +24,7 @@ class Decision(Enum):
         }
         return d[self.value]
 
+
 @dataclass
 class Trade:
     start: datetime

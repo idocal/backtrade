@@ -10,7 +10,7 @@ import sqlalchemy as sa
 from api.db.models import Agent
 
 # revision identifiers, used by Alembic.
-revision = 'b1d398ab97d5'
+revision = "b1d398ab97d5"
 down_revision = None
 branch_labels = None
 depends_on = None
