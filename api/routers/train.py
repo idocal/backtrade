@@ -12,7 +12,7 @@ from pydantic import Field
 
 
 class TrainRequest(RunRequest):
-    ...
+    symbols: VALID_SYMBOLS = Field(..., description="Enter valid symbols")
 
 
 router = APIRouter()
@@ -28,7 +28,7 @@ async def train(
         db,
         request.agent_id,
         ["task_id", "symbols", "train_interval", "train_start", "train_end"],
-        [task.id, request.symbol, request.interval, request.start, request.end],
+        [task.id, request.symbols, request.interval, request.start, request.end],
     )
 
     return JSONResponse(content={"success": True, "content": request.agent_id})

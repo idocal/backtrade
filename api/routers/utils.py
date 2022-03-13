@@ -13,12 +13,12 @@ def initialize_agent_env(request: dict):
     start = datetime.datetime.strptime(request["start"].split("T")[0], "%Y-%m-%d")
     end = datetime.datetime.strptime(request["end"].split("T")[0], "%Y-%m-%d")
     try:
-        df = get_ohlcv(request["symbol"], start, end, request["interval"])
+        df = get_ohlcv(request["symbols"], start, end, request["interval"])
     except MissingDataError:
         download(
-            request["provider"], request["symbol"], request["interval"], start, end
+            request["provider"], request["symbols"], request["interval"], start, end
         )
-        df = get_ohlcv(request["symbol"], start, end, request["interval"])
+        df = get_ohlcv(request["symbols"], start, end, request["interval"])
     env = SingleAssetEnv(request, df)
     check_env(env)
     agent = SingleDQNAgent(env)

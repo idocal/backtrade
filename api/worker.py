@@ -2,7 +2,7 @@ from agents import StatusCallbackDB
 from api.db import crud
 from api.db.database import SessionLocal
 from api.routers.utils import initialize_agent_env
-
+from loguru import logger
 from celery import Celery, Task
 
 app = Celery(__name__)
@@ -43,7 +43,7 @@ def test_task(self, request):
     agent.load("models" + "/" + request["agent_id"])
     obs = env.reset()
     total_steps = len(env.df)
-
+    logger.info(f"Testing agent on symbols:{request['symbols']}")
     while True:
         action = agent.predict(obs)
         obs, reward, done, info = env.step(action)

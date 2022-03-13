@@ -18,11 +18,15 @@ router = APIRouter()
 
 @router.post("/api/test")
 async def test(request: TestRequest, db: Session = Depends(get_db)):
-    task = test_task.delay(request.dict())
+    temp_request = request.dict()
+    agent = crud.get_agent(db, request.agent_id)
+    temp_request["symbols"] = getattr(agent, "symbols")
+    task = test_task.delay(temp_request)
+
     crud.update_agent(
         db,
         request.agent_id,
         ["task_id", "symbols", "test_interval", "test_start", "test_end"],
-        [task.id, request.symbol, request.interval, request.start, request.end],
+        [task.id, temp_request["symbols"], request.interval, request.start, request.end],
     )
     return JSONResponse(content={"success": True, "content": request.agent_id})
