@@ -40,7 +40,7 @@ class SingleAssetEnv(Env):
         self.candle_high_bound = np.array([1, 1, 1, 1, 100])
         self.observation_space = spaces.Box(
             low=np.append(self.candle_low_bound, 0),
-            high=np.append(self.candle_high_bound, 1)
+            high=np.append(self.candle_high_bound, 1),
         )  # OHLCV + is_trading
 
     def plot_candles(self, num: int = np.inf):
@@ -110,7 +110,7 @@ class SingleAssetEnv(Env):
                 if self.step_idx % 100 == 0:
                     logger.warning(f"Action {action} is illegal!")
                 is_legal_action = False
-                reward = float('-inf')
+                reward = float("-inf")
             else:
                 self.buy(candle)
 
@@ -120,7 +120,7 @@ class SingleAssetEnv(Env):
                 if self.step_idx % 100 == 0:
                     logger.warning(f"Action {action} is illegal!")
                 is_legal_action = False
-                reward = float('-inf')
+                reward = float("-inf")
             else:
                 self.sell(candle)
 
