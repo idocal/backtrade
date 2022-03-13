@@ -59,6 +59,8 @@ def test_task(self, request):
 
     # TODO assert length of ledger and candles is the same (or not)
 
+    crud.update_agent(self.session, request["agent_id"], "test_ledger", agent.env.ledger.report())
+
     return {
         "timestamps": [str(d) for d in agent.env.ledger.dates],
         "balances": agent.env.ledger.balances,

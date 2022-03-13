@@ -24,8 +24,5 @@ class Agent(Base):
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
-    def get(self, name):
-        self.__getattr__(name)
-
     def set(self, name, value):
         self.__setattr__(name, value)

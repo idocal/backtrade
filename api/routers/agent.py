@@ -30,14 +30,15 @@ async def all_agents(db: Session = Depends(get_db)):
     Gets a list of all agents
     """
     agents = crud.get_all_agents(db)
-    agents = [a.as_dict() for a in agents]
+    agents = [a.id for a in agents]
     return JSONResponse(content={"success": True, "content": agents})
 
 
 @router.post("/api/agent/status/{agent_id}")
 async def agent_status(agent_id: str, db: Session = Depends(get_db)):
     agent = crud.get_agent(db, agent_id)
-    return JSONResponse(content={"success": True, "content": agent.as_dict()})
+    status = {a: getattr(agent, a) for a in ["train_progress", "train_done", "test_progress", "test_done"]}
+    return JSONResponse(content={"success": True, "content": status})
 
 
 @router.post("/api/agent/result/{agent_id}")
@@ -47,7 +48,6 @@ async def agent_result(agent_id: str, db: Session = Depends(get_db)):
     result = AsyncResult(task_id)
     data = result.get()
     return JSONResponse(content={"success": True, "content": data})
-
 
 # @router.post("/update_agent/{agent_id}/{attr}/{val}")
 # async def update_agent(agent_id: str, attr: str, val, db: Session = Depends(get_db)):
