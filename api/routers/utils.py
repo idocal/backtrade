@@ -3,8 +3,8 @@ import datetime
 from data.query import get_ohlcv
 from data.query import MissingDataError
 from data.download import download
-from envs.SingleAssetEnv import SingleAssetEnv
-from agents.SingleDQNAgent import SingleDQNAgent
+from envs.FullPositionEnv import FullPositionEnv
+from agents.DQNAgent import DQNAgent
 
 from stable_baselines3.common.env_checker import check_env
 
@@ -19,8 +19,8 @@ def initialize_agent_env(request: dict):
             request["provider"], request["symbols"], request["interval"], start, end
         )
         df = get_ohlcv(request["symbols"], start, end, request["interval"])
-    env = SingleAssetEnv(request, df)
+    env = FullPositionEnv(request, request["symbols"], df)
     check_env(env)
-    agent = SingleDQNAgent(env)
+    agent = DQNAgent(env)
 
     return agent, env

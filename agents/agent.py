@@ -1,7 +1,6 @@
 from typing import Type, Union, Optional, Dict, Any
 from abc import abstractmethod
 from stable_baselines3.common.base_class import BasePolicy, BaseAlgorithm
-from envs.SingleAssetEnv import SingleAssetEnv
 from loguru import logger
 
 
@@ -9,7 +8,7 @@ class SingleAgent:
     def __init__(
         self,
         algorithm: Type[BaseAlgorithm],
-        env: SingleAssetEnv,
+        env,
         policy: Union[str, Type[BasePolicy]],
         algorithm_kwargs: Optional[Dict[str, Any]] = None,
         policy_kwargs: Optional[Dict[str, Any]] = None,

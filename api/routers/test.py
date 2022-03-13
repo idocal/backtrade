@@ -20,7 +20,7 @@ router = APIRouter()
 async def test(request: TestRequest, db: Session = Depends(get_db)):
     temp_request = request.dict()
     agent = crud.get_agent(db, request.agent_id)
-    temp_request["symbols"] = getattr(agent, "symbols")
+    temp_request["symbols"] = getattr(agent, "symbols")  # get test symbols from db
     task = test_task.delay(temp_request)
 
     crud.update_agent(

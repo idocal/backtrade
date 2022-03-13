@@ -1,5 +1,4 @@
 from celery.result import AsyncResult
-
 from api.db.database import get_db
 from api.db import crud
 
@@ -7,6 +6,7 @@ from fastapi import APIRouter, Depends
 from secrets import token_hex
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
+from api.worker import app
 
 KEY_SIZE = 32
 
@@ -52,6 +52,13 @@ async def agent_result(agent_id: str, db: Session = Depends(get_db)):
     data = result.get()
     return JSONResponse(content={"success": True, "content": data})
 
+
+@router.post("/api/agent/kill/{agent_id}")
+async def agent_kill(agent_id: str, db: Session = Depends(get_db)):
+    agent = crud.get_agent(db, agent_id)
+    task_id = agent.task_id
+    app.control.revoke(task_id, terminate=True, signal="SIGKILL")
+    return JSONResponse(content={"success": True, "content": {"id": agent_id}})
 
 # @router.post("/update_agent/{agent_id}/{attr}/{val}")
 # async def update_agent(agent_id: str, attr: str, val, db: Session = Depends(get_db)):

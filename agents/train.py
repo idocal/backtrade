@@ -1,4 +1,4 @@
-from agents.SingleDQNAgent import SingleDQNAgent
+from agents.DQNAgent import DQNAgent
 from envs.SingleAssetEnv import SingleAssetEnv
 from stable_baselines3.common.env_checker import check_env
 from agents.callbacks import *
@@ -11,7 +11,7 @@ if __name__ == "__main__":
     train_config = config["train"]
     env = SingleAssetEnv(train_config)
     check_env(env)
-    agent = SingleDQNAgent(env)
+    agent = DQNAgent(env)
     num_train_steps = train_config["num_steps"]
     agent.learn(num_train_steps)
 

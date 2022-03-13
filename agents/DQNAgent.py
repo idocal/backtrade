@@ -1,19 +1,20 @@
 from typing import Type, Union, Optional, Dict, Any
 from agents.agent import SingleAgent
 from envs.SingleAssetEnv import SingleAssetEnv
+from envs.FullPositionEnv import FullPositionEnv
 from stable_baselines3 import DQN
 from stable_baselines3.common.base_class import BasePolicy
 
 
-class SingleDQNAgent(SingleAgent):
+class DQNAgent(SingleAgent):
     def __init__(
         self,
-        env: SingleAssetEnv,
+        env: FullPositionEnv,
         policy: Union[str, Type[BasePolicy]] = "MlpPolicy",
         algorithm_kwargs: Optional[Dict[str, Any]] = None,
         policy_kwargs: Optional[Dict[str, Any]] = None,
     ):
-        super(SingleDQNAgent, self).__init__(
+        super(DQNAgent, self).__init__(
             DQN, env, policy, algorithm_kwargs, policy_kwargs
         )
 
@@ -30,4 +31,4 @@ if __name__ == "__main__":
 
     c = json.load(open("config.json"))
     env = SingleAssetEnv(c)
-    agent = SingleDQNAgent(env)
+    agent = DQNAgent(env)
