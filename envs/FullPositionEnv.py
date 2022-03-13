@@ -21,9 +21,9 @@ class Action(Enum):
             raise AttributeError(f"Cannot compare Action with {type(o)}")
 
 
-class FullPosition(Env):
+class FullPositionEnv(Env):
     def __init__(self, config, symbols, data: pd.DataFrame):
-        super(FullPosition, self).__init__()
+        super(FullPositionEnv, self).__init__()
         self.config = config
         self.cash = config["initial_amount"]
         self.symbols = symbols
