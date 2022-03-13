@@ -1,4 +1,5 @@
 from agents import StatusCallbackDB
+from api.db import crud
 from api.db.database import SessionLocal
 from api.routers.utils import initialize_agent_env
 
@@ -34,3 +35,29 @@ def train_task(self, request):
     )
     agent.save("models" + "/" + request["agent_id"])
     return
+
+
+@app.task(name="test_task", base=DBTask, bind=True)
+def test_task(self, request):
+    agent, env = initialize_agent_env(request)
+    agent.load("models" + "/" + request["agent_id"])
+    obs = env.reset()
+    total_steps = len(env.df)
+
+    while True:
+        action = agent.predict(obs)
+        obs, reward, done, info = env.step(action)
+        crud.update_agent(
+            self.session, request["agent_id"], "test_progress", env.step_idx / total_steps
+        )
+        if done:
+            crud.update_agent(self.session, request["agent_id"], "test_done", 1)
+            break
+
+    # TODO assert length of ledger and candles is the same (or not)
+
+    return {
+        "timestamps": [str(d) for d in agent.env.ledger.dates],
+        "balances": agent.env.ledger.balances,
+        "candles": env.df.to_json(orient="values"),
+    }

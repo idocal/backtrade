@@ -1,5 +1,5 @@
 from .agent import KEY_SIZE
-from data.providers import VALID_PROVIDERS, VALID_INTERVALS, VALID_SYMBOLS
+from data.providers import VALID_PROVIDERS, VALID_SYMBOLS, VALID_INTERVALS
 
 from pydantic import BaseModel, Field, validator
 from datetime import date, datetime
@@ -14,6 +14,7 @@ class RunRequest(BaseModel):
     interval: VALID_INTERVALS = Field(
         ..., description="Enter the interval for the candles"
     )
+
     start: date = Field(..., description="Date in %Y-%m-%d format")
     end: date = Field(..., description="Date in %Y-%m-%d format")
     initial_amount: float = Field(..., ge=0)

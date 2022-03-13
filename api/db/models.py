@@ -14,6 +14,7 @@ class Agent(Base):
     task_id = Column(String, default="")
     symbols = Column(PickleType, default=[])
 
+
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
