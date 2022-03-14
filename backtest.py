@@ -23,6 +23,7 @@ class Trade:
     end: datetime = None
     price_end: float = None
     trigger_end: Decision = None
+    symbol: str = ""
 
 
 class Report:

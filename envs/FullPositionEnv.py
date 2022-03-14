@@ -22,6 +22,13 @@ class Action(Enum):
 
 
 class FullPositionEnv(Env):
+    """
+    Actions:
+    0      : Hold
+    1      : Sell
+    2-(n+1): BUY (n-1)th asset
+    """
+
     def __init__(self, config, symbols, data: pd.DataFrame):
         super(FullPositionEnv, self).__init__()
         self.config = config
@@ -34,7 +41,7 @@ class FullPositionEnv(Env):
         self.commission = config.get("commission", 0)
         self.step_idx = 1
         self.df = data
-        self.prev_candle = Candle.from_df(self.df.iloc[0])
+        self.prev_candle = self.df.iloc[0]
         n_actions = len(symbols) + 2  # HOLD and SELL
         self.action_space = spaces.Discrete(n_actions)
         self.candle_low_bound = np.array([-1, -1, -1, -1, -100] * len(symbols))
@@ -44,14 +51,10 @@ class FullPositionEnv(Env):
             high=np.append(self.candle_high_bound, 1)
         )  # OHLCV + is_trading
 
-    def plot_candles(self, num: int = np.inf):
-        candles = Candles(self.df[:num])
-        candles.plot()
-
     def balance(self, asset_price):
         return self.cash + self.position * asset_price
 
-    def buy(self, candle: Candle):
+    def buy(self, candle: Candle, symbol_idx):
         if self.curr_trade:
             return
         asset_price = candle.close
@@ -66,6 +69,7 @@ class FullPositionEnv(Env):
             trigger_start=Action.BUY,
             idx=self.step_idx,
             commission=commission,
+            symbol=self.symbols[symbol_idx]
         )
         self.cash = 0
         self.position += num_units
@@ -91,21 +95,21 @@ class FullPositionEnv(Env):
         # reset for next trade
         self.curr_trade = None
 
-    def _observation_from_candle(self, candle: Candle):
+    def _observation_from_candle(self, candles):
         bounds = np.stack((self.candle_low_bound, self.candle_high_bound))
-        obs = candle.relative_to(self.prev_candle, bounds=bounds).as_array()
+        obs = candles.relative_to(self.prev_candle, bounds=bounds).as_array()
         is_trading = 0 if self.curr_trade is None else 1
         obs = np.append(obs, is_trading)
         return obs
 
-    def step(self, action: Action):
+    def step(self, action: int):
         if self.step_idx % 100 == 0:
             logger.debug(f"Evaluating candle {self.step_idx}/{len(self.df)}")
             logger.debug(f"Taking action: {action}")
-        candle = Candle.from_df(self.df.iloc[self.step_idx])
+        candles = self.df.iloc[self.step_idx]
         is_legal_action = True
         reward = 0
-        if action == Action.BUY:
+        if action > 1:  # BUY asset
             if self.curr_trade:
                 # cannot perform buy action while in position
                 if self.step_idx % 100 == 0:
@@ -113,9 +117,11 @@ class FullPositionEnv(Env):
                 is_legal_action = False
                 reward = float('-inf')
             else:
-                self.buy(candle)
+                symbol_idx = action - 2
+                candle = Candle.from_df(candles[symbol_idx:symbol_idx + 4])
+                self.buy(candle, symbol_idx)
 
-        elif action == Action.SELL:
+        elif action == 1:
             if self.curr_trade is None:
                 # cannot perform sell action while not in position
                 if self.step_idx % 100 == 0:
@@ -123,16 +129,18 @@ class FullPositionEnv(Env):
                 is_legal_action = False
                 reward = float('-inf')
             else:
+                symbol_idx = self.symbols.index(self.curr_trade.symbol)
+                candle = Candle.from_df(candles[symbol_idx:symbol_idx + 4])
                 self.sell(candle)
 
-        self.curr_balance = self.balance(candle.close)
+        self.curr_balance = self.balance(candle.close)  # TODO: this does not hold for all cases
         self.ledger.log_balance(self.curr_balance, candle.timestamp)
         if is_legal_action:
             reward = self.curr_balance - self.config["initial_amount"]
         self.step_idx += 1  # start from the 2nd observation
         self.prev_candle = candle
-        next_candle = Candle.from_df(self.df.iloc[self.step_idx])
-        observation = self._observation_from_candle(next_candle)
+        next_candles = self.df.iloc[self.step_idx]
+        observation = self._observation_from_candle(next_candles)
         done = self.step_idx == len(self.df) - 1
         info = {}
 
@@ -142,7 +150,7 @@ class FullPositionEnv(Env):
         self.step_idx = 1
         self.cash = self.config["initial_amount"]
         self.position = 0.0
-        self.prev_candle = Candle.from_df(self.df.iloc[0])
+        self.prev_candle = self.df.iloc[0]
         self.curr_balance = self.cash
         self.curr_trade = None
         self.ledger = Ledger(self.config["initial_amount"])

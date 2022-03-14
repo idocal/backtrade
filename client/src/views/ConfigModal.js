@@ -17,7 +17,7 @@ export default function ConfigModal(props) {
     async function onButtonClick() {
         let config = {
             "provider": PROVIDER,
-            "symbol": symbol,
+            "symbols": symbol,
             "interval": interval,
             "start": startDate,
             "end": endDate,
