@@ -21,17 +21,18 @@ class Candle:
     def from_df(df_row: pd.Series):
         timestamp = datetime.fromisoformat(df_row.name)
         return Candle(
-            open=df_row['Open'],
-            high=df_row['High'],
-            low=df_row['Low'],
-            close=df_row['Close'],
-            volume=df_row['Volume'],
-            timestamp=timestamp
+            open=df_row["Open"],
+            high=df_row["High"],
+            low=df_row["Low"],
+            close=df_row["Close"],
+            volume=df_row["Volume"],
+            timestamp=timestamp,
         )
 
     def as_array(self):
-        return np.array([self.open, self.high, self.low, self.close,
-                         self.volume]).astype(np.float32)
+        return np.array(
+            [self.open, self.high, self.low, self.close, self.volume]
+        ).astype(np.float32)
 
     def relative_to(self, candle, bounds=None):
         rel_open = (self.open - candle.open) / candle.open
@@ -59,15 +60,14 @@ class Candle:
             low=rel_low,
             close=rel_close,
             volume=rel_volume,
-            timestamp=self.timestamp
+            timestamp=self.timestamp,
         )
 
 
 class Candles:
-
     def __init__(self, data: pd.DataFrame = None):
-        self.cols = ['Open', 'High', 'Low', 'Close', 'Volume']
-        self.index = 'Date'
+        self.cols = ["Open", "High", "Low", "Close", "Volume"]
+        self.index = "Date"
 
         if data is None:
             data = pd.DataFrame(columns=self.cols)
@@ -84,23 +84,23 @@ class Candles:
 
     @property
     def open(self) -> pd.Series:
-        return self.data['Open']
+        return self.data["Open"]
 
     @property
     def high(self) -> pd.Series:
-        return self.data['High']
+        return self.data["High"]
 
     @property
     def low(self) -> pd.Series:
-        return self.data['Low']
+        return self.data["Low"]
 
     @property
     def close(self) -> pd.Series:
-        return self.data['Close']
+        return self.data["Close"]
 
     @property
     def volume(self) -> pd.Series:
-        return self.data['Volume']
+        return self.data["Volume"]
 
     @property
     def data(self) -> pd.DataFrame:
@@ -117,33 +117,37 @@ class Candles:
     def accumulate(self, k):
         group = self.data.groupby(np.arange(len(self)) // k)
         agg = {
-            'Open': 'first',
-            'High': 'max',
-            'Low': 'min',
-            'Close': 'last',
-            'Volume': 'sum'
+            "Open": "first",
+            "High": "max",
+            "Low": "min",
+            "Close": "last",
+            "Volume": "sum",
         }
         data = group.agg(agg)
         return Candles(data=data)
 
     def plot(self, indicators=[]):
         # plot candlesticks
-        candlesticks_data = go.Candlestick(x=self.data.index,
-                                           open=self.open,
-                                           high=self.high,
-                                           low=self.low,
-                                           close=self.close)
+        candlesticks_data = go.Candlestick(
+            x=self.data.index,
+            open=self.open,
+            high=self.high,
+            low=self.low,
+            close=self.close,
+        )
         fig = go.Figure(data=[candlesticks_data])
 
         # add indicators on top
         for indicator in indicators:
             values = indicator.indicator()
             color = self.random_color()
-            line = go.Scatter(x=self.data.index,
-                              y=values,
-                              mode="lines",
-                              name=indicator.name,
-                              line=go.scatter.Line(color=color))
+            line = go.Scatter(
+                x=self.data.index,
+                y=values,
+                mode="lines",
+                name=indicator.name,
+                line=go.scatter.Line(color=color),
+            )
             fig.add_trace(line)
 
         fig.update_layout(xaxis_rangeslider_visible=False)

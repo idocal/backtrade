@@ -2,9 +2,8 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 from gym import spaces, Env
-from backtest import Ledger, Trade
+from envs.utils import Ledger, Trade
 from enum import Enum
-from candles import Candle, Candles
 
 
 class Action(Enum):

@@ -1,27 +1,26 @@
-from .request_template import RunRequest
+import datetime
+
 from data.query import get_ohlcv
 from data.query import MissingDataError
 from data.download import download
-from envs.SingleAssetEnv import SingleAssetEnv
-from agents.SingleDQNAgent import SingleDQNAgent
+from envs.FullPositionEnv import FullPositionEnv
+from agents.DQNAgent import DQNAgent
 
 from stable_baselines3.common.env_checker import check_env
 
 
-def initialize_agent_env(request: RunRequest):
+def initialize_agent_env(request: dict):
+    start = datetime.datetime.strptime(request["start"].split("T")[0], "%Y-%m-%d")
+    end = datetime.datetime.strptime(request["end"].split("T")[0], "%Y-%m-%d")
     try:
-        df = get_ohlcv(request.symbol, request.start, request.end, request.interval)
+        df = get_ohlcv(request["symbols"], start, end, request["interval"])
     except MissingDataError:
         download(
-            request.provider,
-            request.symbol,
-            request.interval,
-            request.start,
-            request.end,
+            request["provider"], request["symbols"], request["interval"], start, end
         )
-        df = get_ohlcv(request.symbol, request.start, request.end, request.interval)
-    env = SingleAssetEnv(request.dict(), df)
+        df = get_ohlcv(request["symbols"], start, end, request["interval"])
+    env = FullPositionEnv(request, request["symbols"], df)
     check_env(env)
-    agent = SingleDQNAgent(env)
+    agent = DQNAgent(env)
 
     return agent, env
