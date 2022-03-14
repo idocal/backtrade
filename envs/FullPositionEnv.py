@@ -34,6 +34,7 @@ class FullPositionEnv(Env):
         self.commission = config.get("commission", 0)
         self.step_idx = 1
         self.df = data
+        print(self.df.keys())
         self.prev_candle = Candle.from_df(self.df.iloc[0])
         n_actions = len(symbols) + 2  # HOLD and SELL
         self.action_space = spaces.Discrete(n_actions)
