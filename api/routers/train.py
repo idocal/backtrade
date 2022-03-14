@@ -1,3 +1,5 @@
+from typing import List
+
 from data.providers import VALID_SYMBOLS, VALID_INTERVALS
 from .schemas import RunRequest
 from api.db.database import get_db
@@ -8,11 +10,17 @@ from sqlalchemy.orm import Session
 
 from api.worker import train_task
 from api.db import crud
-from pydantic import Field
+from pydantic import Field, validator
 
 
 class TrainRequest(RunRequest):
-    symbols: VALID_SYMBOLS = Field(..., description="Enter valid symbols")
+    symbols: List[str] = Field(..., description=f"Enter a subset of {VALID_SYMBOLS}")
+
+    @validator("symbols")
+    def ensure_allowed_symbols(cls, symbols):
+        assert set(symbols).issubset(VALID_SYMBOLS), f"Enter a subset of {list(VALID_SYMBOLS)}"
+
+        return symbols
 
 
 router = APIRouter()
@@ -20,8 +28,8 @@ router = APIRouter()
 
 @router.post("/api/train")
 async def train(
-    request: TrainRequest,
-    db: Session = Depends(get_db),
+        request: TrainRequest,
+        db: Session = Depends(get_db),
 ):
     task = train_task.delay(request.dict())
     crud.update_agent(

@@ -1,4 +1,4 @@
-from sqlalchemy import Integer, Column, String, Float, PickleType
+from sqlalchemy import Integer, Column, String, Float, PickleType, ARRAY
 
 from .database import Base
 
@@ -12,7 +12,7 @@ class Agent(Base):
     test_progress = Column(Float, default=-1.0)
     test_done = Column(Integer, default=0)
     task_id = Column(String, default="")
-    symbols = Column(PickleType, default=[])
+    symbols = Column(ARRAY(String))
     train_interval = Column(String)
     train_start = Column(String)
     train_end = Column(String)
