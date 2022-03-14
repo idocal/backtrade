@@ -27,6 +27,12 @@ async def test(request: TestRequest, db: Session = Depends(get_db)):
         db,
         request.agent_id,
         ["task_id", "symbols", "test_interval", "test_start", "test_end"],
-        [task.id, temp_request["symbols"], request.interval, request.start, request.end],
+        [
+            task.id,
+            temp_request["symbols"],
+            request.interval,
+            request.start,
+            request.end,
+        ],
     )
     return JSONResponse(content={"success": True, "content": request.agent_id})

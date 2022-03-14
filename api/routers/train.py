@@ -18,7 +18,9 @@ class TrainRequest(RunRequest):
 
     @validator("symbols")
     def ensure_allowed_symbols(cls, symbols):
-        assert set(symbols).issubset(VALID_SYMBOLS), f"Enter a subset of {list(VALID_SYMBOLS)}"
+        assert set(symbols).issubset(
+            VALID_SYMBOLS
+        ), f"Enter a subset of {list(VALID_SYMBOLS)}"
 
         return symbols
 
@@ -28,8 +30,8 @@ router = APIRouter()
 
 @router.post("/api/train")
 async def train(
-        request: TrainRequest,
-        db: Session = Depends(get_db),
+    request: TrainRequest,
+    db: Session = Depends(get_db),
 ):
     task = train_task.delay(request.dict())
     crud.update_agent(

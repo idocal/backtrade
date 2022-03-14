@@ -15,7 +15,7 @@ class MissingDataError(Exception):
 
 
 def get_ohlcv(
-        assets: List[str], start: datetime.date, end: datetime.date, interval: str
+    assets: List[str], start: datetime.date, end: datetime.date, interval: str
 ) -> pd.DataFrame:
     logger.info(f"Fetching local data for {assets}...")
 
@@ -51,4 +51,6 @@ def get_ohlcv(
     logger.info("Done reading data!")
 
     # TODO: decide whether to use inner or outer for the how parameter, and how to fill NA
-    return reduce(lambda left, right: pd.merge(left, right, how="outer", on="Timestamp"), results)
+    return reduce(
+        lambda left, right: pd.merge(left, right, how="outer", on="Timestamp"), results
+    )
