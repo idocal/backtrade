@@ -61,6 +61,17 @@ async def agent_kill(agent_id: str, db: Session = Depends(get_db)):
     return JSONResponse(content={"success": True, "content": {"id": agent_id}})
 
 
+@router.get("/api/agent/delete/{agent_id}")
+async def delete_agent(agent_id: str, db: Session = Depends(get_db)):
+    """
+    Deletes an agent
+    """
+    crud.delete_agent(db, agent_id)
+    content = {
+        "id": agent_id
+    }
+    return JSONResponse(content={"success": True, "content": content})
+
 # @router.post("/update_agent/{agent_id}/{attr}/{val}")
 # async def update_agent(agent_id: str, attr: str, val, db: Session = Depends(get_db)):
 #     agent = crud.update_agent(db, agent_id, attr, val)
