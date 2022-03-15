@@ -17,11 +17,11 @@ VALID_PROVIDERS = Literal["Binance", "binance"]
 #      - allow multiple assets
 
 VALID_INTERVALS = Literal["1m", "5m", "15m", "1h", "4h", "1d"]
-VALID_SYMBOLS = Literal["BTC", "ETH", "ETC", "BNB", "XRP", "LTC"]
+VALID_SYMBOLS = {"BTC", "ETH", "ETC", "BNB", "XRP", "LTC"}
 
 
 def get_provider(provider: str, logger: loguru.Logger):
-    if provider == "binance" or provider == "Binance":
+    if provider.lower() == "binance":
         return Binance(logger)
 
 

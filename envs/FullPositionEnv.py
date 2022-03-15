@@ -33,7 +33,7 @@ class FullPositionEnv(Env):
         self.candle_high_bound = np.array([1, 1, 1, 1, 100] * len(symbols))
         self.observation_space = spaces.Box(
             low=np.append(self.candle_low_bound, 0),
-            high=np.append(self.candle_high_bound, 1)
+            high=np.append(self.candle_high_bound, 1),
         )  # OHLCV + is_trading
 
     def balance(self, asset_price):
@@ -96,7 +96,7 @@ class FullPositionEnv(Env):
                 if self.step_idx % 100 == 0:
                     logger.warning(f"Action {action} is illegal!")
                 is_legal_action = False
-                reward = float('-inf')
+                reward = float("-inf")
             else:
                 symbol_idx = action - 2
                 candle = Candle.from_df(candles[symbol_idx:symbol_idx + 4])
@@ -108,7 +108,7 @@ class FullPositionEnv(Env):
                 if self.step_idx % 100 == 0:
                     logger.warning(f"Action {action} is illegal!")
                 is_legal_action = False
-                reward = float('-inf')
+                reward = float("-inf")
             else:
                 symbol_idx = self.symbols.index(self.curr_trade.symbol)
                 candle = Candle.from_df(candles[symbol_idx:symbol_idx + 4])

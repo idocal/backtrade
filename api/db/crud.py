@@ -13,7 +13,7 @@ def get_all_agents(db: Session):
 
 
 def update_agent(
-    db: Session, agent_id: str, attr: Union[List[str], str], value: Union[List, Any]
+        db: Session, agent_id: str, attr: Union[List[str], str], value: Union[List, Any]
 ):
     db_agent = get_agent(db, agent_id)
     if isinstance(attr, str):
