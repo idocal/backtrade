@@ -7,6 +7,7 @@ from secrets import token_hex
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
 from api.worker import app
+import os
 
 KEY_SIZE = 32
 
@@ -70,6 +71,7 @@ async def delete_agent(agent_id: str, db: Session = Depends(get_db)):
     content = {
         "id": agent_id
     }
+    os.remove(f"models/{agent_id}.zip")
     return JSONResponse(content={"success": True, "content": content})
 
 # @router.post("/update_agent/{agent_id}/{attr}/{val}")
