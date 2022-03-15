@@ -1,8 +1,11 @@
-from .agent import KEY_SIZE
+from typing import Any, Optional
+
 from data.providers import VALID_PROVIDERS, VALID_INTERVALS
 
 from pydantic import BaseModel, Field, validator
 from datetime import date, datetime
+
+KEY_SIZE = 32
 
 
 class RunRequest(BaseModel):
@@ -28,3 +31,10 @@ class RunRequest(BaseModel):
             "End date cannot be greater than today"
         )
         return end
+
+
+class AgentUpdateRequest(BaseModel):
+    agent_id: str = Field(
+        ..., min_length=2 * KEY_SIZE, max_length=2 * KEY_SIZE, description="Agent ID"
+    )
+    updates: dict = Field(dict())

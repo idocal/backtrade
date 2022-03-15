@@ -1,4 +1,5 @@
 from celery.result import AsyncResult
+
 from api.db.database import get_db
 from api.db import crud
 
@@ -6,9 +7,10 @@ from fastapi import APIRouter, Depends
 from secrets import token_hex
 from fastapi.responses import JSONResponse
 from sqlalchemy.orm import Session
+
+from api.routers.schemas import AgentUpdateRequest, KEY_SIZE
 from api.worker import app
 
-KEY_SIZE = 32
 
 router = APIRouter()
 
@@ -72,7 +74,9 @@ async def delete_agent(agent_id: str, db: Session = Depends(get_db)):
     }
     return JSONResponse(content={"success": True, "content": content})
 
-# @router.post("/update_agent/{agent_id}/{attr}/{val}")
-# async def update_agent(agent_id: str, attr: str, val, db: Session = Depends(get_db)):
-#     agent = crud.update_agent(db, agent_id, attr, val)
-#     return JSONResponse(content={"success": True, "agent_status": agent.as_dict()})
+
+@router.post("/api/agent/update")
+async def update_agent(request: AgentUpdateRequest, db: Session = Depends(get_db)):
+    agent_id = request.agent_id
+    agent = crud.update_agent(db, agent_id, list(request.updates.keys()), list(request.updates.values()))
+    return JSONResponse(content={"success": True, "content": agent.id})
