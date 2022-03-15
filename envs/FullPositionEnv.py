@@ -3,21 +3,7 @@ import pandas as pd
 from loguru import logger
 from gym import spaces, Env
 from envs.utils import Ledger, Trade
-from enum import Enum
-
-
-class Action(Enum):
-    HOLD = 0
-    BUY = 1
-    SELL = 2
-
-    def __eq__(self, o):
-        if isinstance(o, Action):
-            return self.value == o.value
-        elif isinstance(o, int):
-            return self.value == o
-        else:
-            raise AttributeError(f"Cannot compare Action with {type(o)}")
+from candles import Candle
 
 
 class FullPositionEnv(Env):
@@ -40,7 +26,7 @@ class FullPositionEnv(Env):
         self.commission = config.get("commission", 0)
         self.step_idx = 1
         self.df = data
-        self.prev_candle = self.df.iloc[0]
+        self.prev_vector = self.df.iloc[0]
         n_actions = len(symbols) + 2  # HOLD and SELL
         self.action_space = spaces.Discrete(n_actions)
         self.candle_low_bound = np.array([-1, -1, -1, -1, -100] * len(symbols))
@@ -53,19 +39,17 @@ class FullPositionEnv(Env):
     def balance(self, asset_price):
         return self.cash + self.position * asset_price
 
-    def buy(self, candle: Candle, symbol_idx):
+    def buy(self, asset_price, timestamp, symbol_idx):
         if self.curr_trade:
             return
-        asset_price = candle.close
         commission = self.commission * self.cash
         self.cash -= commission
         # TODO: round number of units in real trading
         num_units = self.cash / asset_price
         self.curr_trade = Trade(
-            start=candle.timestamp,
+            start=timestamp,
             price_start=asset_price,
             num_units=num_units,
-            trigger_start=Action.BUY,
             idx=self.step_idx,
             commission=commission,
             symbol=self.symbols[symbol_idx]
@@ -73,11 +57,10 @@ class FullPositionEnv(Env):
         self.cash = 0
         self.position += num_units
 
-    def sell(self, candle: Candle):
+    def sell(self, asset_price, timestamp):
         if not self.curr_trade:
             return
         # perform trade exit
-        asset_price = candle.close
         gain = self.position * asset_price
         commission = self.commission * gain
         self.cash += gain
@@ -85,18 +68,17 @@ class FullPositionEnv(Env):
         self.position = 0.0
 
         # log trade
-        self.curr_trade.end = candle.timestamp
-        self.curr_trade.price_end = candle.close
-        self.curr_trade.trigger_end = Action.SELL
+        self.curr_trade.end = timestamp
+        self.curr_trade.price_end = asset_price
         self.curr_trade.commission += commission
         self.ledger.log_trade(self.curr_trade)
 
         # reset for next trade
         self.curr_trade = None
 
-    def _observation_from_candle(self, candles):
+    def _observation_from_vector(self, vector):
         bounds = np.stack((self.candle_low_bound, self.candle_high_bound))
-        obs = candles.relative_to(self.prev_candle, bounds=bounds).as_array()
+        obs = vector.relative_to(self.prev_vector, bounds=bounds).as_array()
         is_trading = 0 if self.curr_trade is None else 1
         obs = np.append(obs, is_trading)
         return obs
@@ -137,9 +119,9 @@ class FullPositionEnv(Env):
         if is_legal_action:
             reward = self.curr_balance - self.config["initial_amount"]
         self.step_idx += 1  # start from the 2nd observation
-        self.prev_candle = candle
-        next_candles = self.df.iloc[self.step_idx]
-        observation = self._observation_from_candle(next_candles)
+        self.prev_vector = candle
+        next_vector = self.df.iloc[self.step_idx]
+        observation = self._observation_from_vector(next_vector)
         done = self.step_idx == len(self.df) - 1
         info = {}
 
@@ -149,9 +131,9 @@ class FullPositionEnv(Env):
         self.step_idx = 1
         self.cash = self.config["initial_amount"]
         self.position = 0.0
-        self.prev_candle = self.df.iloc[0]
+        self.prev_vector = self.df.iloc[0]
         self.curr_balance = self.cash
         self.curr_trade = None
         self.ledger = Ledger(self.config["initial_amount"])
-        first_candle = Candle.from_df(self.df.iloc[1])
-        return self._observation_from_candle(first_candle)
+        first_vector = self.df.iloc[1]
+        return self._observation_from_candle(first_vector)

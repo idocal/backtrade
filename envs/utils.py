@@ -1,28 +1,7 @@
 from dataclasses import dataclass
 from datetime import datetime
-from enum import Enum
 import plotly.graph_objects as go
 import pandas as pd
-
-
-class Decision(Enum):
-    HOLD = 0
-    LONG = 1
-    SHORT = 2
-    PULL = 3
-    STOPLOSS = 4
-    TAKE_PROFIT = 5
-
-    def __str__(self):
-        d = {
-            0: "hold",
-            1: "long",
-            2: "short",
-            3: "pull",
-            4: "stoploss",
-            5: "take profit",
-        }
-        return d[self.value]
 
 
 @dataclass
@@ -30,12 +9,11 @@ class Trade:
     start: datetime
     price_start: float
     num_units: float
-    trigger_start: Decision
     idx: int
     commission: float
     end: datetime = None
     price_end: float = None
-    trigger_end: Decision = None
+    symbol: str = ""
 
 
 class Report:
@@ -82,12 +60,6 @@ class Ledger:
         ) / self.initial_amount
         max_drawdown = (max(bs) - min(bs)) / max(bs)
         num_trades = len(self.trades)
-        num_stoploss = len(
-            [t for t in self.trades if t.trigger_end == Decision.STOPLOSS]
-        )
-        num_take_profit = len(
-            [t for t in self.trades if t.trigger_end == Decision.TAKE_PROFIT]
-        )
         profitable = len([t for t in self.trades if t.price_end - t.price_start > 0])
 
         start_dates = [t.start for t in self.trades]
@@ -116,8 +88,6 @@ class Ledger:
             "Periodical Return": periodical_return,
             "Max Drawdown": max_drawdown,
             "# Trades": num_trades,
-            "Stoploss": num_stoploss,
-            "Take Profit": num_take_profit,
             "Profitable Trades": profitable,
             "Commission": sum(commissions),
         }
