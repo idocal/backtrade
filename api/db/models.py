@@ -7,6 +7,7 @@ class Agent(Base):
     __tablename__ = "agents"
 
     id = Column(String, primary_key=True)
+    name = Column(String)
     train_progress = Column(Float, default=-1.0)
     train_done = Column(Integer, default=0)
     test_progress = Column(Float, default=-1.0)
