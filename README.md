@@ -37,6 +37,7 @@ $ npm install
 
 ## How to use
 1. Start the Postgres server.
+
 **MacOS**:
 ```
 $ brew services start poostgresql
