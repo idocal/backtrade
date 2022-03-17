@@ -10,13 +10,21 @@ A system for training and backtesting RL algorithms on financial assets.
 ## Installation
 Backend (using virtual env):
 ```sh
+$ pip install --upgrade pip
 $ pip install uvicorn
 $ python -m venv vnev
 $ source venv/bin/activate
 $ (venv) pip install -r requirements.txt
 ```
-Install ```redis``` according to your platform.
-As well as ```postgres``` with DB name,username,password as ```postgres``` with ```localhost``` and port 5432.
+
+On MacOS:
+```sh
+$ brew update
+$ brew install redis postgres
+```
+
+Postgres username, password and name should be `postgres`.
+Hostname: `localhost`, Port: `5432`
 
 Frontend:
 ```sh
@@ -28,16 +36,19 @@ $ npm install
 1. Run the API server:  
 Start the ```postgres``` server according to your platform. Then do the following:
 ```sh
-$ uvicorn api:app --reload --host 0.0.0.0 (from within the api folder)
+$ cd api
+$ uvicorn api:app --reload --host 0.0.0.0
 $ redis-cli monitor
 $ celery -A worker.app worker --logleve=info --pool=solo(needed for windows) (from withing the api folder)
 ```
 
 This will load a web server with hot reload on http://localhost:8000
+Swagger API is available at: http://localhost:8000/docs
 
 2. Run client server:
 ```
 $ cd client
 $ npm run start
 ```
+
 The website will be loaded on http://localhost:3000
