@@ -50,7 +50,7 @@ $ export PYTHONPATH="${PYTHONPATH}:${PWD}"
 $ cd api
 $ uvicorn api:app --reload --host 0.0.0.0
 $ redis-cli monitor
-$ celery -A worker.app worker --logleve=info --pool=solo(needed for windows) (from withing the api folder)
+$ celery -A worker.app worker --logleve=info --pool=solo
 ```
 
 This will load a web server with hot reload on http://localhost:8000
