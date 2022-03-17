@@ -9,7 +9,7 @@ A system for training and backtesting RL algorithms on financial assets.
 
 ## Installation
 
-### Backend (using virtual env):
+### Backend (using virtual env)
 ```sh
 $ pip install --upgrade pip
 $ pip install uvicorn
@@ -36,7 +36,11 @@ $ npm install
 ```
 
 ## How to use
-1. Start the `postgres` server according to your platform.
+1. Start the Postgres server.
+**MacOS**:
+```
+$ brew services start poostgresql
+```
 2. Run the API server:  
 ```sh
 $ cd api
