@@ -9,7 +9,7 @@ A system for training and backtesting RL algorithms on financial assets.
 
 ## Installation
 
-### Backend (using virtual env)
+### Backend
 ```sh
 $ pip install --upgrade pip
 $ pip install uvicorn
