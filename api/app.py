@@ -5,6 +5,9 @@ from data.providers import DownloadError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
+from api.db.database import Base, engine
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
