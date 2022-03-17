@@ -46,6 +46,7 @@ $ brew services start poostgresql
 ```
 2. Run the API server:  
 ```sh
+$ export PYTHONPATH="${PYTHONPATH}:${PWD}"
 $ cd api
 $ uvicorn api:app --reload --host 0.0.0.0
 $ redis-cli monitor
