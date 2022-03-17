@@ -24,6 +24,8 @@ $ (venv) pip install -r requirements.txt
 ```sh
 $ brew update
 $ brew install redis postgres
+$ psql postgres
+postgres-# CREATE ROLE postgres WITH LOGIN PASSWORD 'postgres'
 ```
 
 Postgres username, password and name should be `postgres`.
