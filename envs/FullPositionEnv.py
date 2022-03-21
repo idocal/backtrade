@@ -88,6 +88,9 @@ class FullPositionEnv(Env):
             logger.debug(f"Evaluating candle {self.step_idx}/{len(self.df)}")
             logger.debug(f"Taking action: {action}")
         candles = self.df.iloc[self.step_idx]
+        print('candles')
+        print(candles)
+        timestamp = candles[0]
         is_legal_action = True
         reward = 0
         if action > 1:  # BUY asset
@@ -99,8 +102,8 @@ class FullPositionEnv(Env):
                 reward = float("-inf")
             else:
                 symbol_idx = action - 2
-                candle = Candle.from_df(candles[symbol_idx:symbol_idx + 4])
-                self.buy(candle, symbol_idx)
+                asset_price = candles[symbol_idx + 4]  # close price
+                self.buy(asset_price, timestamp, symbol_idx)
 
         elif action == 1:
             if self.curr_trade is None:
@@ -136,4 +139,4 @@ class FullPositionEnv(Env):
         self.curr_trade = None
         self.ledger = Ledger(self.config["initial_amount"])
         first_vector = self.df.iloc[1]
-        return self._observation_from_candle(first_vector)
+        return self._observation_from_vector(first_vector)
