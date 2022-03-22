@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 from gym import spaces, Env
-from envs.utils import Ledger, Trade
+from envs.utils import Ledger, Trade, Observation
 from candles import Candle
 
 
@@ -26,7 +26,7 @@ class FullPositionEnv(Env):
         self.commission = config.get("commission", 0)
         self.step_idx = 1
         self.df = data
-        self.prev_vector = self.df.iloc[0]
+        self.prev_obs = Observation.from_df(self.df.iloc[0])
         n_actions = len(symbols) + 2  # HOLD and SELL
         self.action_space = spaces.Discrete(n_actions)
         self.candle_low_bound = np.array([-1, -1, -1, -1, -100] * len(symbols))
@@ -76,23 +76,24 @@ class FullPositionEnv(Env):
         # reset for next trade
         self.curr_trade = None
 
-    def _observation_from_vector(self, vector):
+    def _next_from_obs(self, obs) -> np.ndarray:
         bounds = np.stack((self.candle_low_bound, self.candle_high_bound))
-        obs = vector.relative_to(self.prev_vector, bounds=bounds).as_array()
+        next_obs = obs.relative_to(self.prev_obs, bounds=bounds).data
         is_trading = 0 if self.curr_trade is None else 1
-        obs = np.append(obs, is_trading)
-        return obs
+        next_obs = np.append(next_obs, is_trading)
+        return next_obs
 
     def step(self, action: int):
         if self.step_idx % 100 == 0:
             logger.debug(f"Evaluating candle {self.step_idx}/{len(self.df)}")
             logger.debug(f"Taking action: {action}")
         candles = self.df.iloc[self.step_idx]
-        print('candles')
-        print(candles)
-        timestamp = candles[0]
+        obs = Observation.from_df(candles)
         is_legal_action = True
         reward = 0
+        asset_price = 0
+
+        # perform actions
         if action > 1:  # BUY asset
             if self.curr_trade:
                 # cannot perform buy action while in position
@@ -102,10 +103,10 @@ class FullPositionEnv(Env):
                 reward = float("-inf")
             else:
                 symbol_idx = action - 2
-                asset_price = candles[symbol_idx + 4]  # close price
-                self.buy(asset_price, timestamp, symbol_idx)
+                asset_price = obs.data[symbol_idx + 4]  # close price
+                self.buy(asset_price, obs.timestamp, symbol_idx)
 
-        elif action == 1:
+        elif action == 1:  # SELL
             if self.curr_trade is None:
                 # cannot perform sell action while not in position
                 if self.step_idx % 100 == 0:
@@ -114,17 +115,25 @@ class FullPositionEnv(Env):
                 reward = float("-inf")
             else:
                 symbol_idx = self.symbols.index(self.curr_trade.symbol)
-                candle = Candle.from_df(candles[symbol_idx:symbol_idx + 4])
-                self.sell(candle)
+                asset_price = obs.data[symbol_idx + 4]  # close price
+                self.sell(asset_price, obs.timestamp)
+        else:  # HOLD
+            if self.curr_trade is not None:
+                symbol_idx = self.symbols.index(self.curr_trade.symbol)
+                asset_price = obs.data[symbol_idx + 4]  # close price
 
-        self.curr_balance = self.balance(candle.close)  # TODO: this does not hold for all cases
-        self.ledger.log_balance(self.curr_balance, candle.timestamp)
+        # update env with action
+        next_balance = self.balance(asset_price)  # TODO: this does not hold for all cases
+        self.ledger.log_balance(self.curr_balance, obs.timestamp)
         if is_legal_action:
-            reward = self.curr_balance - self.config["initial_amount"]
+            reward = next_balance - self.curr_balance
+        self.curr_balance = next_balance
+
+        # proceed to next step
         self.step_idx += 1  # start from the 2nd observation
-        self.prev_vector = candle
-        next_vector = self.df.iloc[self.step_idx]
-        observation = self._observation_from_vector(next_vector)
+        self.prev_obs = obs
+        next_obs = Observation.from_df(self.df.iloc[self.step_idx])
+        observation = self._next_from_obs(next_obs)
         done = self.step_idx == len(self.df) - 1
         info = {}
 
@@ -134,9 +143,9 @@ class FullPositionEnv(Env):
         self.step_idx = 1
         self.cash = self.config["initial_amount"]
         self.position = 0.0
-        self.prev_vector = self.df.iloc[0]
+        self.prev_obs = Observation.from_df(self.df.iloc[0])
         self.curr_balance = self.cash
         self.curr_trade = None
         self.ledger = Ledger(self.config["initial_amount"])
-        first_vector = self.df.iloc[1]
-        return self._observation_from_vector(first_vector)
+        first_obs = Observation.from_df(self.df.iloc[1])
+        return self._next_from_obs(first_obs)

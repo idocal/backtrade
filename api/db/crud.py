@@ -39,3 +39,7 @@ def delete_agent(db: Session, agent_id: str):
     db.delete(db_agent)
     db.commit()
     return
+
+
+def clear_agents(db: Session):
+    return

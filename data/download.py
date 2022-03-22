@@ -1,4 +1,4 @@
-from .providers import get_provider
+from data.providers import get_provider
 from data import DB_URL
 
 import time

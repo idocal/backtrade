@@ -2,6 +2,26 @@ from dataclasses import dataclass
 from datetime import datetime
 import plotly.graph_objects as go
 import pandas as pd
+import numpy as np
+
+
+@dataclass
+class Observation:
+    timestamp: datetime.date
+    data: np.ndarray
+
+    @staticmethod
+    def from_df(df: pd.Series):
+        data = df.to_numpy()
+        timestamp = pd.to_datetime(df.name).date()
+        return Observation(timestamp=timestamp, data=data)
+
+    def relative_to(self, obs, bounds=None):
+        assert(self.data.shape == obs.data.shape)
+        rel_obs = (self.data - obs.data) / obs.data
+        if bounds is not None:
+            np.clip(rel_obs, bounds[0], bounds[1], out=rel_obs)
+        return Observation(timestamp=self.timestamp, data=rel_obs)
 
 
 @dataclass
