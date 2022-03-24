@@ -1,6 +1,8 @@
 from typing import List, Any, Union
+from datetime import datetime
 
 from sqlalchemy.orm import Session
+from sqlalchemy import insert
 from . import models
 
 
@@ -37,5 +39,13 @@ def create_agent(db: Session, agent_id: str):
 def delete_agent(db: Session, agent_id: str):
     db_agent = get_agent(db, agent_id)
     db.delete(db_agent)
+    db.commit()
+    return
+
+
+def add_to_ledger(db: Session, agent_id: str, ledger):
+    db.execute(insert(models.Ledger.__table__),
+               [{"agent_id": agent_id, "timestamp": t, "balance": b} for t, b in
+                zip(ledger["timestamps"], ledger["balances"])])
     db.commit()
     return

@@ -49,7 +49,7 @@ class Ledger:
         self.initial_amount = initial_amount
         self.trades = []
         self.balances = []
-        self.dates = []
+        self.timestamps = []
         self.trade_points = []
 
     def get_data(self):
@@ -57,7 +57,7 @@ class Ledger:
             "initial_amounts": self.initial_amount,
             "trades": self.trades,
             "balances": self.balances,
-            "dates": self.dates,
+            "timestamps": self.timestamps,
             "trade_points": self.trade_points,
         }
 
@@ -67,11 +67,11 @@ class Ledger:
 
     def log_balance(self, balance: float, date: datetime):
         self.balances.append(balance)
-        self.dates.append(date)
+        self.timestamps.append(date)
 
     def plot_balance(self):
         f = go.Figure()
-        f.add_trace(go.Scatter(x=self.dates, y=self.balances, fill="tozeroy"))
+        f.add_trace(go.Scatter(x=self.timestamps, y=self.balances, fill="tozeroy"))
         f.show()
 
     def report(self):

@@ -1,4 +1,5 @@
-from sqlalchemy import Integer, Column, String, Float, PickleType, ARRAY
+from sqlalchemy import Integer, Column, String, Float, PickleType, ARRAY, ForeignKey, DateTime
+from sqlalchemy.orm import relationship
 
 from .database import Base
 
@@ -20,10 +21,21 @@ class Agent(Base):
     test_interval = Column(String)
     test_start = Column(String)
     test_end = Column(String)
-    test_ledger = Column(PickleType)
+    test_ledger = relationship("Ledger", cascade='delete, delete-orphan')
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
 
     def set(self, name, value):
         self.__setattr__(name, value)
+
+
+class Ledger(Base):
+    __tablename__ = "ledger"
+    agent_id = Column(String, ForeignKey("agents.id", ondelete="CASCADE"), primary_key=True)
+    timestamp = Column(DateTime, primary_key=True)
+    balance = Column(Float, primary_key=True)
+
+
+# class Trade(Base):
+#     __tablename__ = "trade"
