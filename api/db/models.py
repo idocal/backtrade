@@ -18,10 +18,15 @@ class Agent(Base):
     train_interval = Column(String)
     train_start = Column(String)
     train_end = Column(String)
+    # train_initial_amount = Column(Float)
+    # train_commission = Column(Float)
     test_interval = Column(String)
     test_start = Column(String)
     test_end = Column(String)
-    test_ledger = relationship("Ledger", cascade='delete, delete-orphan')
+    # test_initial_amount = Column(Float)
+    # test_commission = Column(Float)
+    test_balances = relationship("Balance", cascade='delete, delete-orphan')
+    test_trades = relationship("Trade", cascade='delete, delete-orphan')
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
@@ -30,12 +35,22 @@ class Agent(Base):
         self.__setattr__(name, value)
 
 
-class Ledger(Base):
-    __tablename__ = "ledger"
+class Balance(Base):
+    __tablename__ = "balances"
     agent_id = Column(String, ForeignKey("agents.id", ondelete="CASCADE"), primary_key=True)
     timestamp = Column(DateTime, primary_key=True)
     balance = Column(Float, primary_key=True)
 
 
-# class Trade(Base):
-#     __tablename__ = "trade"
+class Trade(Base):
+    __tablename__ = "trades"
+    agent_id = Column(String, ForeignKey("agents.id", ondelete="CASCADE"), primary_key=True)
+    idx = Column(Integer, primary_key=True)
+    start = Column(DateTime)
+    end = Column(DateTime)
+    price_start = Column(Float)
+    price_end = Column(Float)
+    num_units = Column(Float)
+    commission = Column(Float)
+    trigger_start = Column(Integer)
+    trigger_end = Column(Integer)

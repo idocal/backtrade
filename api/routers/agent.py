@@ -33,7 +33,7 @@ async def all_agents(db: Session = Depends(get_db)):
     Gets a list of all agents
     """
     agents = crud.get_all_agents(db)
-    agents = [a.id for a in agents]
+    agents = [a.as_dict() for a in agents]
     return JSONResponse(content={"success": True, "content": agents})
 
 

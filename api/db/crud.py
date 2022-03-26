@@ -3,6 +3,8 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 from sqlalchemy import insert
+
+from envs.utils import Trade
 from . import models
 
 
@@ -43,9 +45,18 @@ def delete_agent(db: Session, agent_id: str):
     return
 
 
-def add_to_ledger(db: Session, agent_id: str, ledger):
-    db.execute(insert(models.Ledger.__table__),
+def add_balances(db: Session, agent_id: str, ledger):
+    db.execute(insert(models.Balance.__table__),
                [{"agent_id": agent_id, "timestamp": t, "balance": b} for t, b in
                 zip(ledger["timestamps"], ledger["balances"])])
+    db.commit()
+    return
+
+
+def add_trades(db: Session, agent_id: str, trades: List[Trade]):
+    db.execute(insert(models.Trade.__table__),
+               [{"agent_id": agent_id, "start": t.start, "price_start": t.price_start, "num_units": t.num_units,
+                 "trigger_start": t.trigger_start.value, "idx": t.idx, "commission": t.commission, "end": t.end,
+                 "price_end": t.price_end, "trigger_end": t.trigger_end.value} for t in trades])
     db.commit()
     return
