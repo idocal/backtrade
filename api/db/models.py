@@ -1,4 +1,14 @@
-from sqlalchemy import Integer, Column, String, Float, PickleType, ARRAY, ForeignKey, DateTime, Date
+from sqlalchemy import (
+    Integer,
+    Column,
+    String,
+    Float,
+    PickleType,
+    ARRAY,
+    ForeignKey,
+    DateTime,
+    Date,
+)
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -25,8 +35,8 @@ class Agent(Base):
     test_end = Column(Date)
     test_initial_amount = Column(Float)
     test_commission = Column(Float)
-    test_balances = relationship("Balance", cascade='delete, delete-orphan')
-    test_trades = relationship("Trade", cascade='delete, delete-orphan')
+    test_balances = relationship("Balance", cascade="delete, delete-orphan")
+    test_trades = relationship("Trade", cascade="delete, delete-orphan")
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
@@ -37,14 +47,18 @@ class Agent(Base):
 
 class Balance(Base):
     __tablename__ = "balances"
-    agent_id = Column(String, ForeignKey("agents.id", ondelete="CASCADE"), primary_key=True)
+    agent_id = Column(
+        String, ForeignKey("agents.id", ondelete="CASCADE"), primary_key=True
+    )
     timestamp = Column(DateTime, primary_key=True)
     balance = Column(Float, primary_key=True)
 
 
 class Trade(Base):
     __tablename__ = "trades"
-    agent_id = Column(String, ForeignKey("agents.id", ondelete="CASCADE"), primary_key=True)
+    agent_id = Column(
+        String, ForeignKey("agents.id", ondelete="CASCADE"), primary_key=True
+    )
     idx = Column(Integer, primary_key=True)
     start_time = Column(DateTime)
     end_time = Column(DateTime)

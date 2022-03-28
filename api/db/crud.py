@@ -18,7 +18,7 @@ def get_all_agents(db: Session):
 
 
 def update_agent(
-        db: Session, agent_id: str, attr: Union[List[str], str], value: Union[List, Any]
+    db: Session, agent_id: str, attr: Union[List[str], str], value: Union[List, Any]
 ):
     db_agent = get_agent(db, agent_id)
     if isinstance(attr, str):
@@ -47,10 +47,14 @@ def delete_agent(db: Session, agent_id: str):
 
 
 def add_balances(db: Session, agent_id: str, ledger):
-    #TODO: add ON_DUPLICATE_UPDATE
-    db.execute(insert(models.Balance.__table__),
-               [{"agent_id": agent_id, "timestamp": t, "balance": b} for t, b in
-                zip(ledger["timestamps"], ledger["balances"])])
+    # TODO: add ON_DUPLICATE_UPDATE
+    db.execute(
+        insert(models.Balance.__table__),
+        [
+            {"agent_id": agent_id, "timestamp": t, "balance": b}
+            for t, b in zip(ledger["timestamps"], ledger["balances"])
+        ],
+    )
     db.commit()
     return
 
@@ -61,11 +65,25 @@ def get_balances(db: Session, agent_id: str):
 
 
 def add_trades(db: Session, agent_id: str, trades: List[Trade]):
-    #TODO: add ON_DUPLICATE_UPDATE
-    db.execute(insert(models.Trade.__table__),
-               [{"agent_id": agent_id, "start_time": t.start_time, "price_start": t.price_start, "num_units": t.num_units,
-                 "trigger_start": t.trigger_start.value, "idx": t.idx, "commission": t.commission, "end_time": t.end_time,
-                 "price_end": t.price_end, "trigger_end": t.trigger_end.value} for t in trades])
+    # TODO: add ON_DUPLICATE_UPDATE
+    db.execute(
+        insert(models.Trade.__table__),
+        [
+            {
+                "agent_id": agent_id,
+                "start_time": t.start_time,
+                "price_start": t.price_start,
+                "num_units": t.num_units,
+                "trigger_start": t.trigger_start.value,
+                "idx": t.idx,
+                "commission": t.commission,
+                "end_time": t.end_time,
+                "price_end": t.price_end,
+                "trigger_end": t.trigger_end.value,
+            }
+            for t in trades
+        ],
+    )
     db.commit()
     return
 
@@ -73,4 +91,3 @@ def add_trades(db: Session, agent_id: str, trades: List[Trade]):
 def get_trades(db: Session, agent_id: str):
     q = f"SELECT idx , start_time, end_time, price_start, price_end, num_units, commission, trigger_start, trigger_end FROM trades WHERE agent_id = '{agent_id}'"
     return pd.read_sql_query(q, db.connection())
-

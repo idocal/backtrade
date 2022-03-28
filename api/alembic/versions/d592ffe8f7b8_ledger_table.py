@@ -12,8 +12,8 @@ import sqlalchemy as sa
 # revision identifiers, used by Alembic.
 from db.models import Agent, Balance, Trade
 
-revision = 'd592ffe8f7b8'
-down_revision = '4a818eeb7133'
+revision = "d592ffe8f7b8"
+down_revision = "4a818eeb7133"
 branch_labels = None
 depends_on = None
 
@@ -30,8 +30,6 @@ def upgrade():
 
     cols = [c for c in Trade.__table__.columns]
     op.create_table(Trade.__tablename__, *cols)
-
-
 
 
 def downgrade():

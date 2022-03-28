@@ -59,7 +59,9 @@ async def agent_result(agent_id: str, db: Session = Depends(get_db)):
     data["timestamps"] = balances["timestamp"].tolist()
     trades = crud.get_trades(db, agent_id)
     data["trades"] = trades.values.tolist()
-    data["candles"] = get_ohlcv(agent.symbols, agent.test_start, agent.test_end, agent.test_interval).values.tolist()
+    data["candles"] = get_ohlcv(
+        agent.symbols, agent.test_start, agent.test_end, agent.test_interval
+    ).values.tolist()
     content = jsonable_encoder({"success": True, "content": data})
     return JSONResponse(content=content)
 
@@ -78,9 +80,7 @@ async def delete_agent(agent_id: str, db: Session = Depends(get_db)):
     Deletes an agent
     """
     crud.delete_agent(db, agent_id)
-    content = {
-        "id": agent_id
-    }
+    content = {"id": agent_id}
     os.remove(f"models/{agent_id}.zip")
     return JSONResponse(content={"success": True, "content": content})
 
@@ -88,5 +88,7 @@ async def delete_agent(agent_id: str, db: Session = Depends(get_db)):
 @router.post("/api/agent/update")
 async def update_agent(request: AgentUpdateRequest, db: Session = Depends(get_db)):
     agent_id = request.agent_id
-    agent = crud.update_agent(db, agent_id, list(request.updates.keys()), list(request.updates.values()))
+    agent = crud.update_agent(
+        db, agent_id, list(request.updates.keys()), list(request.updates.values())
+    )
     return JSONResponse(content={"success": True, "content": agent.id})

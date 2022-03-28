@@ -19,8 +19,12 @@ class RunRequest(BaseModel):
 
     start_date: date = Field(..., description="Date in %Y-%m-%d format")
     end_date: date = Field(..., description="Date in %Y-%m-%d format")
-    initial_amount: float = Field(..., description=f"Enter initial amount of cash", ge=0)
-    commission: float = Field(0, ge=0, lt=1, description=f"Enter commission per transaction")
+    initial_amount: float = Field(
+        ..., description=f"Enter initial amount of cash", ge=0
+    )
+    commission: float = Field(
+        0, ge=0, lt=1, description=f"Enter commission per transaction"
+    )
 
     @validator("end_date")
     def ensure_end_later_than_start(cls, end_date, values):

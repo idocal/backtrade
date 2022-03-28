@@ -31,17 +31,33 @@ router = APIRouter()
 
 @router.post("/api/train")
 async def train(
-        request: TrainRequest,
-        db: Session = Depends(get_db),
+    request: TrainRequest,
+    db: Session = Depends(get_db),
 ):
     task = train_task.delay(request.dict())
     crud.update_agent(
         db,
         request.agent_id,
-        ["task_id", "symbols", "train_interval", "train_start", "train_end", "name", "train_initial_amount",
-         "train_commission"],
-        [task.id, request.symbols, request.interval, request.start_date, request.end_date, request.name,
-         request.initial_amount, request.commission],
+        [
+            "task_id",
+            "symbols",
+            "train_interval",
+            "train_start",
+            "train_end",
+            "name",
+            "train_initial_amount",
+            "train_commission",
+        ],
+        [
+            task.id,
+            request.symbols,
+            request.interval,
+            request.start_date,
+            request.end_date,
+            request.name,
+            request.initial_amount,
+            request.commission,
+        ],
     )
 
     return JSONResponse(content={"success": True, "content": request.agent_id})
