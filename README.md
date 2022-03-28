@@ -43,6 +43,7 @@ $ npm install
 **MacOS**:
 ```
 $ brew services start poostgresql
+$ brew services start redis
 ```
 2. Run the API server:  
 ```sh
