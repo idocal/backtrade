@@ -17,20 +17,20 @@ class RunRequest(BaseModel):
         ..., description="Enter the interval for the candles"
     )
 
-    start: date = Field(..., description="Date in %Y-%m-%d format")
-    end: date = Field(..., description="Date in %Y-%m-%d format")
-    initial_amount: float = Field(..., ge=0)
-    commission: float = Field(..., ge=0, lt=1)
+    start_date: date = Field(..., description="Date in %Y-%m-%d format")
+    end_date: date = Field(..., description="Date in %Y-%m-%d format")
+    initial_amount: float = Field(..., description=f"Enter initial amount of cash", ge=0)
+    commission: float = Field(0, ge=0, lt=1, description=f"Enter commission per transaction")
 
-    @validator("end")
-    def ensure_end_later_than_start(cls, end, values):
-        assert end > values["start"], ValueError(
-            "End date must be greater than start date"
+    @validator("end_date")
+    def ensure_end_later_than_start(cls, end_date, values):
+        assert end_date > values["start_date"], ValueError(
+            "End date must be greater than start_time date"
         )
-        assert end <= datetime.today().date(), ValueError(
+        assert end_date <= datetime.today().date(), ValueError(
             "End date cannot be greater than today"
         )
-        return end
+        return end_date
 
 
 class AgentUpdateRequest(BaseModel):

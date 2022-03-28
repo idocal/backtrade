@@ -27,13 +27,13 @@ class Decision(Enum):
 
 @dataclass
 class Trade:
-    start: datetime
+    start_time: datetime
     price_start: float
     num_units: float
     trigger_start: Decision
     idx: int
     commission: float
-    end: datetime = None
+    end_time: datetime = None
     price_end: float = None
     trigger_end: Decision = None
 
@@ -90,11 +90,11 @@ class Ledger:
         )
         profitable = len([t for t in self.trades if t.price_end - t.price_start > 0])
 
-        start_dates = [t.start for t in self.trades]
+        start_dates = [t.start_time for t in self.trades]
         price_starts = [t.price_start for t in self.trades]
         trigger_starts = [str(t.trigger_start) for t in self.trades]
         positions = [t.num_units for t in self.trades]
-        end_dates = [t.end for t in self.trades]
+        end_dates = [t.end_time for t in self.trades]
         price_ends = [t.price_end for t in self.trades]
         trigger_ends = [str(t.trigger_end) for t in self.trades]
         trade_balances = [self.balances[t.idx] for t in self.trades]

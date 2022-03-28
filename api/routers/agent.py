@@ -6,12 +6,14 @@ from api.db import crud
 from fastapi import APIRouter, Depends
 from secrets import token_hex
 from fastapi.responses import JSONResponse
+from fastapi.encoders import jsonable_encoder
 from sqlalchemy.orm import Session
-
+import pandas as pd
 from api.routers.schemas import AgentUpdateRequest, KEY_SIZE
 from api.worker import app
 import os
 
+from data.query import get_ohlcv
 
 router = APIRouter()
 
@@ -33,8 +35,9 @@ async def all_agents(db: Session = Depends(get_db)):
     Gets a list of all agents
     """
     agents = crud.get_all_agents(db)
-    agents = [a.as_dict() for a in agents]
-    return JSONResponse(content={"success": True, "content": agents})
+    agents = [a.__dict__ for a in agents]
+    content = jsonable_encoder({"success": True, "content": agents})
+    return JSONResponse(content=content)
 
 
 @router.post("/api/agent/status/{agent_id}")
@@ -50,10 +53,15 @@ async def agent_status(agent_id: str, db: Session = Depends(get_db)):
 @router.post("/api/agent/result/{agent_id}")
 async def agent_result(agent_id: str, db: Session = Depends(get_db)):
     agent = crud.get_agent(db, agent_id)
-    task_id = agent.task_id
-    result = AsyncResult(task_id)
-    data = result.get()
-    return JSONResponse(content={"success": True, "content": data})
+    data = dict()
+    balances = crud.get_balances(db, agent_id)
+    data["balances"] = balances["balance"].values.tolist()
+    data["timestamps"] = balances["timestamp"].tolist()
+    trades = crud.get_trades(db, agent_id)
+    data["trades"] = trades.values.tolist()
+    data["candles"] = get_ohlcv(agent.symbols, agent.test_start, agent.test_end, agent.test_interval).values.tolist()
+    content = jsonable_encoder({"success": True, "content": data})
+    return JSONResponse(content=content)
 
 
 @router.post("/api/agent/kill/{agent_id}")

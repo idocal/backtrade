@@ -61,7 +61,7 @@ class FullPositionEnv(Env):
         # TODO: round number of units in real trading
         num_units = self.cash / asset_price
         self.curr_trade = Trade(
-            start=candle.timestamp,
+            start_time=candle.timestamp,
             price_start=asset_price,
             num_units=num_units,
             trigger_start=Action.BUY,
@@ -83,7 +83,7 @@ class FullPositionEnv(Env):
         self.position = 0.0
 
         # log trade
-        self.curr_trade.end = candle.timestamp
+        self.curr_trade.end_time = candle.timestamp
         self.curr_trade.price_end = candle.close
         self.curr_trade.trigger_end = Action.SELL
         self.curr_trade.commission += commission
@@ -130,7 +130,7 @@ class FullPositionEnv(Env):
         self.ledger.log_balance(self.curr_balance, candle.timestamp)
         if is_legal_action:
             reward = self.curr_balance - self.config["initial_amount"]
-        self.step_idx += 1  # start from the 2nd observation
+        self.step_idx += 1  # start_time from the 2nd observation
         self.prev_candle = candle
         next_candle = Candle.from_df(self.df.iloc[self.step_idx])
         observation = self._observation_from_candle(next_candle)

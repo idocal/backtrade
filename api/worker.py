@@ -61,9 +61,4 @@ def test_task(self, request):
 
     crud.add_trades(self.session, request["agent_id"], agent.env.ledger.get_data()["trades"])
     crud.add_balances(self.session, request["agent_id"], agent.env.ledger.get_data())
-
-    return {
-        "timestamps": [str(d) for d in agent.env.ledger.timestamps],
-        "balances": agent.env.ledger.balances,
-        "candles": env.df.to_json(orient="values"),
-    }
+    return

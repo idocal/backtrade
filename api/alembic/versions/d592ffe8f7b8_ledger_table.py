@@ -20,6 +20,9 @@ depends_on = None
 
 def upgrade():
 
+    op.drop_table(Agent.__tablename__)
+    cols = [c for c in Agent.__table__.columns]
+    op.create_table(Agent.__tablename__, *cols)
 
     # op.drop_table(Ledger.__tablename__)
     cols = [c for c in Balance.__table__.columns]
@@ -30,9 +33,6 @@ def upgrade():
 
 
 
-    # op.drop_table(Agent.__tablename__)
-    cols = [c for c in Agent.__table__.columns]
-    op.create_table(Agent.__tablename__, *cols)
 
 def downgrade():
     pass
