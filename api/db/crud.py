@@ -68,26 +68,15 @@ def add_trades(db: Session, agent_id: str, trades: List[Trade]):
     # TODO: add ON_DUPLICATE_UPDATE
     db.execute(
         insert(models.Trade.__table__),
-        [
-            {
-                "agent_id": agent_id,
-                "start_time": t.start_time,
-                "price_start": t.price_start,
-                "num_units": t.num_units,
-                "trigger_start": t.trigger_start.value,
-                "idx": t.idx,
-                "commission": t.commission,
-                "end_time": t.end_time,
-                "price_end": t.price_end,
-                "trigger_end": t.trigger_end.value,
-            }
-            for t in trades
-        ],
+        [{"agent_id": agent_id} | t.as_dict() for t in trades],
     )
     db.commit()
     return
 
 
 def get_trades(db: Session, agent_id: str):
-    q = f"SELECT idx , start_time, end_time, price_start, price_end, num_units, commission, trigger_start, trigger_end FROM trades WHERE agent_id = '{agent_id}'"
+    q = (
+        f"SELECT idx , start_time, end_time, price_start, price_end, num_units, "
+        f"commission, trigger_start, trigger_end FROM trades WHERE agent_id = '{agent_id}'"
+    )
     return pd.read_sql_query(q, db.connection())

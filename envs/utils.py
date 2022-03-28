@@ -37,7 +37,17 @@ class Trade:
     price_end: float = None
     trigger_end: Decision = None
 
-
+    def as_dict(self):
+        return {"start_time": self.start_time,
+                "price_start": self.price_start,
+                "num_units": self.num_units,
+                "trigger_start": self.trigger_start.value,
+                "idx": self.idx,
+                "commission": self.commission,
+                "end_time": self.end_time,
+                "price_end": self.price_end,
+                "trigger_end": self.trigger_end.value,
+            }
 class Report:
     def __init__(self, agg: dict, trades: pd.DataFrame):
         self.agg = agg
