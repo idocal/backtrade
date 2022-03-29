@@ -47,7 +47,9 @@ class Trade:
                 "end_time": self.end_time,
                 "price_end": self.price_end,
                 "trigger_end": self.trigger_end.value,
-            }
+                }
+
+
 class Report:
     def __init__(self, agg: dict, trades: pd.DataFrame):
         self.agg = agg
@@ -88,8 +90,8 @@ class Ledger:
         # aggregated report
         bs = self.balances
         periodical_return = (
-            self.balances[-1] - self.initial_amount
-        ) / self.initial_amount
+                                    self.balances[-1] - self.initial_amount
+                            ) / self.initial_amount
         max_drawdown = (max(bs) - min(bs)) / max(bs)
         num_trades = len(self.trades)
         num_stoploss = len(

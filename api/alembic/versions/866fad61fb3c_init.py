@@ -1,26 +1,27 @@
 """init
 
-Revision ID: b1d398ab97d5
+Revision ID: 866fad61fb3c
 Revises: 
-Create Date: 2022-03-02 00:47:14.330136
+Create Date: 2022-03-28 21:36:39.665136
 
 """
 from alembic import op
 import sqlalchemy as sa
-from api.db.models import Agent, Trade, Balance
+
 
 # revision identifiers, used by Alembic.
-revision = "b1d398ab97d5"
+revision = '866fad61fb3c'
 down_revision = None
 branch_labels = None
 depends_on = None
+
+from api.db.models import Agent, Trade, Balance
 
 
 def upgrade():
     cols = [c for c in Agent.__table__.columns]
     op.create_table(Agent.__tablename__, *cols)
 
-    # op.drop_table(Ledger.__tablename__)
     cols = [c for c in Balance.__table__.columns]
     op.create_table(Balance.__tablename__, *cols)
 
@@ -29,5 +30,6 @@ def upgrade():
 
 
 def downgrade():
-    # op.drop_table(Agent.__tablename__)
-    pass
+    op.drop_table(Agent.__tablename__)
+    op.drop_table(Balance.__tablename__)
+    op.drop_table(Trade.__tablename__)
