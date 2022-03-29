@@ -13,6 +13,7 @@ function Agents() {
         const data = await fetch('/api/agent/all');
         const json = await data.json();
         setAgents(json.content);
+          console.log(json.content);
       }
 
       // call the function
@@ -26,7 +27,7 @@ function Agents() {
             { agents.map( (agent, i) => {
                 return (
                     <div className="agent" key={i}>
-                        <Link to={ 'test/' + agent.id }>
+                        <Link to={ 'test/' + agent }>
                             { 'Agent #' + (i + 1) }
                         </Link>
                     </div>

@@ -18,6 +18,46 @@ export default function Test() {
         setResults(res.content);
     }
 
+    async function getTestResults() {
+        const URL = '/api/agent/result/' + agentId;
+        let response = await fetch(URL);
+        response.json().then ( r => {
+            console.log(r);
+            onTestEnd(r.content);
+        });
+    }
+
+    async function checkTestStatus() {
+        const URL = '/api/agent/status/' + agentId;
+        let done = false;
+        let interval = setInterval(async () => {
+            if (done) {
+                clearInterval(interval);
+            }
+            
+            // request training status
+            let response = await fetch(URL, {
+                method: 'POST',
+                headers: {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({'agent_id': agentId})
+            });
+
+            response.json().then( r => {
+                console.dir(r);
+                setLoadingStatus(Math.round(Math.min(r.content.test_progress, 1) * 100));
+                if (r.content.test_done) {
+                    done = true;
+                    getTestResults();
+                }
+            })
+            
+        }, 100);
+    }
+
+
     async function testAgent(config) {
         console.log(config);
         config['agent_id'] = agentId;
@@ -36,7 +76,7 @@ export default function Test() {
         setLoading(true);
         let testRes = await testAgent(config);
         testRes.json().then( res => {
-            onTestEnd(res);
+            checkTestStatus();
         })
     }
 

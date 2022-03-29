@@ -62,7 +62,7 @@ async def agent_status(agent_id: str, db: Session = Depends(get_db)):
     return JSONResponse(content={"success": True, "content": status})
 
 
-@router.post("/api/agent/result/{agent_id}")
+@router.get("/api/agent/result/{agent_id}")
 async def agent_result(agent_id: str, db: Session = Depends(get_db)):
     agent = crud.get_agent(db, agent_id)
     task_id = agent.task_id
