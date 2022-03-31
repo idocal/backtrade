@@ -10,8 +10,8 @@ from stable_baselines3.common.env_checker import check_env
 
 
 def initialize_agent_env(request: dict):
-    start = datetime.datetime.strptime(request["start"].split("T")[0], "%Y-%m-%d")
-    end = datetime.datetime.strptime(request["end"].split("T")[0], "%Y-%m-%d")
+    start = datetime.datetime.strptime(request["start_date"].split("T")[0], "%Y-%m-%d")
+    end = datetime.datetime.strptime(request["end_date"].split("T")[0], "%Y-%m-%d")
     try:
         df = get_ohlcv(request["symbols"], start, end, request["interval"])
     except MissingDataError:

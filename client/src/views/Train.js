@@ -26,15 +26,7 @@ export default function Train() {
             }
             
             // request training status
-            let response = await fetch(URL, {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({'agent_id': newAgentId})
-            });
-
+            let response = await fetch(URL);
             response.json().then( r => {
                 console.dir(r);
                 setLoadingStatus(Math.round(Math.min(r.content.train_progress, 100) * 100));
@@ -47,6 +39,8 @@ export default function Train() {
     }
 
     async function trainAgent(config) {
+        console.log('training agent with config: ');
+        console.dir(config);
         const URL = '/api/train';
         return await fetch(URL, {
             method: 'POST',

@@ -26,13 +26,23 @@ async def test(request: TestRequest, db: Session = Depends(get_db)):
     crud.update_agent(
         db,
         request.agent_id,
-        ["task_id", "symbols", "test_interval", "test_start", "test_end"],
+        [
+            "task_id",
+            "symbols",
+            "test_interval",
+            "test_start",
+            "test_end",
+            "test_initial_amount",
+            "test_commission",
+        ],
         [
             task.id,
             temp_request["symbols"],
             request.interval,
-            request.start,
-            request.end,
+            request.start_date,
+            request.end_date,
+            request.initial_amount,
+            request.commission,
         ],
     )
     return JSONResponse(content={"success": True, "content": request.agent_id})

@@ -36,15 +36,7 @@ export default function Test() {
             }
             
             // request training status
-            let response = await fetch(URL, {
-                method: 'POST',
-                headers: {
-                    Accept: 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({'agent_id': agentId})
-            });
-
+            let response = await fetch(URL);
             response.json().then( r => {
                 console.dir(r);
                 setLoadingStatus(Math.round(Math.min(r.content.test_progress, 1) * 100));

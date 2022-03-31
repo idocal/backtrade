@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Optional
 
 from data.providers import VALID_SYMBOLS, VALID_INTERVALS
 from .schemas import RunRequest
@@ -15,6 +15,7 @@ from pydantic import Field, validator
 
 class TrainRequest(RunRequest):
     symbols: List[str] = Field(..., description=f"Enter a subset of {VALID_SYMBOLS}")
+    name: Optional[str]
 
     @validator("symbols")
     def ensure_allowed_symbols(cls, symbols):
@@ -37,8 +38,26 @@ async def train(
     crud.update_agent(
         db,
         request.agent_id,
-        ["task_id", "symbols", "train_interval", "train_start", "train_end"],
-        [task.id, request.symbols, request.interval, request.start, request.end],
+        [
+            "task_id",
+            "symbols",
+            "train_interval",
+            "train_start",
+            "train_end",
+            "name",
+            "train_initial_amount",
+            "train_commission",
+        ],
+        [
+            task.id,
+            request.symbols,
+            request.interval,
+            request.start_date,
+            request.end_date,
+            request.name,
+            request.initial_amount,
+            request.commission,
+        ],
     )
 
     return JSONResponse(content={"success": True, "content": request.agent_id})

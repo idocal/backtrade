@@ -1,10 +1,15 @@
 from typing import List, Any, Union
+from datetime import datetime
 
+import pandas as pd
 from sqlalchemy.orm import Session
+from sqlalchemy import insert
+
+from envs.utils import Trade
 from . import models
 
 
-def get_agent(db: Session, agent_id: str):
+def get_agent(db: Session, agent_id: str) -> models.Agent:
     return db.query(models.Agent).filter(models.Agent.id == agent_id).first()
 
 
@@ -13,7 +18,7 @@ def get_all_agents(db: Session):
 
 
 def update_agent(
-        db: Session, agent_id: str, attr: Union[List[str], str], value: Union[List, Any]
+    db: Session, agent_id: str, attr: Union[List[str], str], value: Union[List, Any]
 ):
     db_agent = get_agent(db, agent_id)
     if isinstance(attr, str):
@@ -43,3 +48,39 @@ def delete_agent(db: Session, agent_id: str):
 
 def clear_agents(db: Session):
     return
+
+
+def add_balances(db: Session, agent_id: str, ledger):
+    # TODO: add ON_DUPLICATE_UPDATE
+    db.execute(
+        insert(models.Balance.__table__),
+        [
+            {"agent_id": agent_id, "timestamp": t, "balance": b}
+            for t, b in zip(ledger["timestamps"], ledger["balances"])
+        ],
+    )
+    db.commit()
+    return
+
+
+def get_balances(db: Session, agent_id: str):
+    q = f"SELECT timestamp , balance FROM balances WHERE agent_id = '{agent_id}'"
+    return pd.read_sql_query(q, db.connection())
+
+
+def add_trades(db: Session, agent_id: str, trades: List[Trade]):
+    # TODO: add ON_DUPLICATE_UPDATE
+    db.execute(
+        insert(models.Trade.__table__),
+        [{**{"agent_id": agent_id}, **t.as_dict()} for t in trades],
+    )
+    db.commit()
+    return
+
+
+def get_trades(db: Session, agent_id: str):
+    q = (
+        f"SELECT idx , start_time, end_time, price_start, price_end, num_units, "
+        f"commission FROM trades WHERE agent_id = '{agent_id}'"
+    )
+    return pd.read_sql_query(q, db.connection())

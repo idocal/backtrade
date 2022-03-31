@@ -36,7 +36,7 @@ def get_ohlcv(
         start_date = start.strftime("%Y-%m-%d")
         end_date = end.strftime("%Y-%m-%d")
 
-        # TODO: fix query such that it checks all dates in between start and end
+        # TODO: fix query such that it checks all timestamps in between start and end
         # design query
         q = f"SELECT Timestamp, Open, High, Low, Close, Volume FROM {table_name} \
             WHERE Timestamp >= date('{start_date}') \

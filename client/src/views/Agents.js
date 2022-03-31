@@ -27,7 +27,7 @@ function Agents() {
             { agents.map( (agent, i) => {
                 return (
                     <div className="agent" key={i}>
-                        <Link to={ 'test/' + agent }>
+                        <Link to={ 'test/' + agent.id }>
                             { 'Agent #' + (i + 1) }
                         </Link>
                     </div>

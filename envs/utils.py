@@ -26,14 +26,24 @@ class Observation:
 
 @dataclass
 class Trade:
-    start: datetime
+    start_time: datetime
     price_start: float
     num_units: float
     idx: int
     commission: float
-    end: datetime = None
+    end_time: datetime = None
     price_end: float = None
     symbol: str = ""
+
+    def as_dict(self):
+        return {"start_time": self.start_time,
+                "price_start": self.price_start,
+                "num_units": self.num_units,
+                "idx": self.idx,
+                "commission": self.commission,
+                "end_time": self.end_time,
+                "price_end": self.price_end
+                }
 
 
 class Report:
@@ -47,7 +57,7 @@ class Ledger:
         self.initial_amount = initial_amount
         self.trades = []
         self.balances = []
-        self.dates = []
+        self.timestamps = []
         self.trade_points = []
 
     def get_data(self):
@@ -55,7 +65,7 @@ class Ledger:
             "initial_amounts": self.initial_amount,
             "trades": self.trades,
             "balances": self.balances,
-            "dates": self.dates,
+            "timestamps": self.timestamps,
             "trade_points": self.trade_points,
         }
 
@@ -65,28 +75,28 @@ class Ledger:
 
     def log_balance(self, balance: float, date: datetime):
         self.balances.append(balance)
-        self.dates.append(date)
+        self.timestamps.append(date)
 
     def plot_balance(self):
         f = go.Figure()
-        f.add_trace(go.Scatter(x=self.dates, y=self.balances, fill="tozeroy"))
+        f.add_trace(go.Scatter(x=self.timestamps, y=self.balances, fill="tozeroy"))
         f.show()
 
     def report(self):
         # aggregated report
         bs = self.balances
         periodical_return = (
-            self.balances[-1] - self.initial_amount
-        ) / self.initial_amount
+                                    self.balances[-1] - self.initial_amount
+                            ) / self.initial_amount
         max_drawdown = (max(bs) - min(bs)) / max(bs)
         num_trades = len(self.trades)
         profitable = len([t for t in self.trades if t.price_end - t.price_start > 0])
 
-        start_dates = [t.start for t in self.trades]
+        start_dates = [t.start_time for t in self.trades]
         price_starts = [t.price_start for t in self.trades]
         trigger_starts = [str(t.trigger_start) for t in self.trades]
         positions = [t.num_units for t in self.trades]
-        end_dates = [t.end for t in self.trades]
+        end_dates = [t.end_time for t in self.trades]
         price_ends = [t.price_end for t in self.trades]
         trigger_ends = [str(t.trigger_end) for t in self.trades]
         trade_balances = [self.balances[t.idx] for t in self.trades]

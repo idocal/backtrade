@@ -19,8 +19,8 @@ export default function ConfigModal(props) {
             "provider": PROVIDER,
             "symbols": symbol,
             "interval": interval,
-            "start": startDate,
-            "end": endDate,
+            "start_date": startDate,
+            "end_date": endDate,
             "initial_amount": 10000,
             "commission": 0.00075
         }

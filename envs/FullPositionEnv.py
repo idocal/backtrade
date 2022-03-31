@@ -47,7 +47,7 @@ class FullPositionEnv(Env):
         # TODO: round number of units in real trading
         num_units = self.cash / asset_price
         self.curr_trade = Trade(
-            start=timestamp,
+            start_time=timestamp,
             price_start=asset_price,
             num_units=num_units,
             idx=self.step_idx,
@@ -68,7 +68,7 @@ class FullPositionEnv(Env):
         self.position = 0.0
 
         # log trade
-        self.curr_trade.end = timestamp
+        self.curr_trade.end_time = timestamp
         self.curr_trade.price_end = asset_price
         self.curr_trade.commission += commission
         self.ledger.log_trade(self.curr_trade)
