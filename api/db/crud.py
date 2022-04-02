@@ -1,5 +1,4 @@
 from typing import List, Any, Union
-from datetime import datetime
 
 import pandas as pd
 from sqlalchemy.orm import Session
@@ -63,6 +62,12 @@ def add_balances(db: Session, agent_id: str, ledger):
     return
 
 
+def delete_balances(db: Session, agent_id: str):
+    db.query(models.Balance).filter(models.Balance.agent_id == agent_id).delete()
+    db.commit()
+    return
+
+
 def get_balances(db: Session, agent_id: str):
     q = f"SELECT timestamp , balance FROM balances WHERE agent_id = '{agent_id}'"
     return pd.read_sql_query(q, db.connection())
@@ -74,6 +79,12 @@ def add_trades(db: Session, agent_id: str, trades: List[Trade]):
         insert(models.Trade.__table__),
         [{**{"agent_id": agent_id}, **t.as_dict()} for t in trades],
     )
+    db.commit()
+    return
+
+
+def delete_trades(db: Session, agent_id: str):
+    db.query(models.Trade).filter(models.Trade.agent_id == agent_id).delete()
     db.commit()
     return
 

@@ -7,17 +7,17 @@ import numpy as np
 
 @dataclass
 class Observation:
-    timestamp: datetime.date
+    timestamp: datetime
     data: np.ndarray
 
     @staticmethod
     def from_df(df: pd.Series):
         data = df.to_numpy()
-        timestamp = pd.to_datetime(df.name).date()
+        timestamp = pd.to_datetime(df.name)
         return Observation(timestamp=timestamp, data=data)
 
     def relative_to(self, obs, bounds=None):
-        assert(self.data.shape == obs.data.shape)
+        assert self.data.shape == obs.data.shape
         rel_obs = (self.data - obs.data) / obs.data
         if bounds is not None:
             np.clip(rel_obs, bounds[0], bounds[1], out=rel_obs)
@@ -36,14 +36,15 @@ class Trade:
     symbol: str = ""
 
     def as_dict(self):
-        return {"start_time": self.start_time,
-                "price_start": self.price_start,
-                "num_units": self.num_units,
-                "idx": self.idx,
-                "commission": self.commission,
-                "end_time": self.end_time,
-                "price_end": self.price_end
-                }
+        return {
+            "start_time": self.start_time,
+            "price_start": self.price_start,
+            "num_units": self.num_units,
+            "idx": self.idx,
+            "commission": self.commission,
+            "end_time": self.end_time,
+            "price_end": self.price_end,
+        }
 
 
 class Report:
@@ -86,8 +87,8 @@ class Ledger:
         # aggregated report
         bs = self.balances
         periodical_return = (
-                                    self.balances[-1] - self.initial_amount
-                            ) / self.initial_amount
+            self.balances[-1] - self.initial_amount
+        ) / self.initial_amount
         max_drawdown = (max(bs) - min(bs)) / max(bs)
         num_trades = len(self.trades)
         profitable = len([t for t in self.trades if t.price_end - t.price_start > 0])

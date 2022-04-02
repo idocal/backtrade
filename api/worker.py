@@ -39,10 +39,13 @@ def train_task(self, request):
 
 @app.task(name="test_task", base=DBTask, bind=True)
 def test_task(self, request):
+    crud.update_agent(self.session, request["agent_id"], "test_done", 0)
     agent, env = initialize_agent_env(request)
     agent.load("models" + "/" + request["agent_id"])
     obs = env.reset()
     total_steps = len(env.df)
+    crud.delete_balances(self.session, request["agent_id"])
+    crud.delete_trades(self.session, request["agent_id"])
     logger.info(f"Testing agent on symbols:{request['symbols']}")
     while True:
         action = agent.predict(obs)
