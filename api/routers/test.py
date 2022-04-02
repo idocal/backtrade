@@ -18,6 +18,7 @@ router = APIRouter()
 
 @router.post("/api/test")
 async def test(request: TestRequest, db: Session = Depends(get_db)):
+    crud.update_agent(db, request.agent_id, "test_done", 0)
     temp_request = request.dict()
     agent = crud.get_agent(db, request.agent_id)
     temp_request["symbols"] = getattr(agent, "symbols")  # get test symbols from db

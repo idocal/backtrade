@@ -39,7 +39,6 @@ def train_task(self, request):
 
 @app.task(name="test_task", base=DBTask, bind=True)
 def test_task(self, request):
-    crud.update_agent(self.session, request["agent_id"], "test_done", 0)
     agent, env = initialize_agent_env(request)
     agent.load("models" + "/" + request["agent_id"])
     obs = env.reset()
@@ -57,13 +56,13 @@ def test_task(self, request):
             env.step_idx / total_steps,
         )
         if done:
-            crud.update_agent(self.session, request["agent_id"], "test_done", 1)
             break
 
     # TODO assert length of ledger and candles is the same (or not)
-
+    logger.info("Saving test results to DB...")
     crud.add_trades(
         self.session, request["agent_id"], agent.env.ledger.get_data()["trades"]
     )
     crud.add_balances(self.session, request["agent_id"], agent.env.ledger.get_data())
+    crud.update_agent(self.session, request["agent_id"], "test_done", 1)
     return
