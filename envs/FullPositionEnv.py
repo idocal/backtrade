@@ -25,7 +25,7 @@ class FullPositionEnv(Env):
         self.ledger = Ledger(self.config["initial_amount"])
         self.commission = config.get("commission", 0)
         self.step_idx = 1
-        self.df = data
+        self.df = data.drop_duplicates()
         self.prev_obs = Observation.from_df(self.df.iloc[0])
         n_actions = len(symbols) + 2  # HOLD and SELL
         self.action_space = spaces.Discrete(n_actions)
