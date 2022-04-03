@@ -46,6 +46,8 @@ def delete_agent(db: Session, agent_id: str):
 
 
 def clear_agents(db: Session):
+    db.query(models.Agent).delete()
+    db.commit()
     return
 
 

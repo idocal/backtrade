@@ -35,8 +35,8 @@ class Agent(Base):
     test_end = Column(Date)
     test_initial_amount = Column(Float)
     test_commission = Column(Float)
-    test_balances = relationship("Balance", cascade="delete, delete-orphan")
-    test_trades = relationship("Trade", cascade="delete, delete-orphan")
+    test_balances = relationship("Balance", cascade="all, delete-orphan")
+    test_trades = relationship("Trade", cascade="all, delete-orphan")
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
