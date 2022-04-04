@@ -47,4 +47,5 @@ async def test(request: TestRequest, db: Session = Depends(get_db)):
             request.commission,
         ],
     )
+    crud.add_test(db, request.agent_id, task.id)
     return JSONResponse(content={"success": True, "content": request.agent_id})

@@ -17,7 +17,7 @@ def get_all_agents(db: Session):
 
 
 def update_agent(
-    db: Session, agent_id: str, attr: Union[List[str], str], value: Union[List, Any]
+        db: Session, agent_id: str, attr: Union[List[str], str], value: Union[List, Any]
 ):
     db_agent = get_agent(db, agent_id)
     if isinstance(attr, str):
@@ -51,12 +51,12 @@ def clear_agents(db: Session):
     return
 
 
-def add_balances(db: Session, agent_id: str, ledger):
+def add_balances(db: Session, task_id: str, ledger):
     # TODO: add ON_DUPLICATE_UPDATE
     db.execute(
         insert(models.Balance.__table__),
         [
-            {"agent_id": agent_id, "timestamp": t, "balance": b}
+            {"task_id": task_id, "timestamp": t, "balance": b}
             for t, b in zip(ledger["timestamps"], ledger["balances"])
         ],
     )
@@ -75,11 +75,11 @@ def get_balances(db: Session, agent_id: str):
     return pd.read_sql_query(q, db.connection())
 
 
-def add_trades(db: Session, agent_id: str, trades: List[Trade]):
+def add_trades(db: Session, task_id: str, trades: List[Trade]):
     # TODO: add ON_DUPLICATE_UPDATE
     db.execute(
         insert(models.Trade.__table__),
-        [{**{"agent_id": agent_id}, **t.as_dict()} for t in trades],
+        [{**{"task_id": task_id}, **t.as_dict()} for t in trades],
     )
     db.commit()
     return
@@ -97,3 +97,11 @@ def get_trades(db: Session, agent_id: str):
         f"commission FROM trades WHERE agent_id = '{agent_id}'"
     )
     return pd.read_sql_query(q, db.connection())
+
+
+def add_test(db: Session, agent_id: str, task_id: str):
+    db_test = models.Test(agent_id=agent_id, task_id=task_id)
+    db.add(db_test)
+    db.commit()
+    db.refresh(db_test)
+    return
