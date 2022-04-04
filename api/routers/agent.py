@@ -33,6 +33,16 @@ async def clear_agents(db: Session = Depends(get_db)):
     return JSONResponse(content={"success": True})
 
 
+@router.get("/api/agent/get/{agent_id}")
+async def all_agents(agent_id: str, db: Session = Depends(get_db)):
+    """
+    Gets an agent
+    """
+    agent = crud.get_agent(db, agent_id)
+    content = jsonable_encoder({"success": True, "content": agent.__dict__})
+    return JSONResponse(content=content)
+
+
 @router.get("/api/agent/all")
 async def all_agents(db: Session = Depends(get_db)):
     """
