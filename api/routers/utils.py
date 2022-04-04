@@ -9,7 +9,7 @@ from agents.DQNAgent import DQNAgent
 from stable_baselines3.common.env_checker import check_env
 
 
-def initialize_agent_env(request: dict):
+def initialize_agent_env(request: dict, db=None):
     start = datetime.datetime.strptime(request["start_date"].split("T")[0], "%Y-%m-%d")
     end = datetime.datetime.strptime(request["end_date"].split("T")[0], "%Y-%m-%d")
     try:
@@ -19,7 +19,7 @@ def initialize_agent_env(request: dict):
             request["provider"], request["symbols"], request["interval"], start, end
         )
         df = get_ohlcv(request["symbols"], start, end, request["interval"])
-    env = FullPositionEnv(request, request["symbols"], df)
+    env = FullPositionEnv(request, request["symbols"], df, db)
     check_env(env)
     agent = DQNAgent(env)
 

@@ -59,7 +59,15 @@ async def agent_status(agent_id: str, db: Session = Depends(get_db)):
     agent = crud.get_agent(db, agent_id)
     status = {
         a: getattr(agent, a)
-        for a in ["train_progress", "train_done", "test_progress", "test_done"]
+        for a in [
+            "train_progress",
+            "train_done",
+            "test_progress",
+            "test_done",
+            "action",
+            "obs",
+            "balance",
+        ]
     }
     return JSONResponse(content={"success": True, "content": status})
 

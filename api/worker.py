@@ -27,7 +27,7 @@ class DBTask(Task):
 
 @app.task(name="train_task", base=DBTask, bind=True)
 def train_task(self, request):
-    agent, env = initialize_agent_env(request)
+    agent, env = initialize_agent_env(request, self.session)
     num_train_steps = len(env.df)
     agent.learn(
         num_train_steps,
@@ -62,9 +62,7 @@ def test_task(self, request):
     logger.info("Saving test results to DB...")
     ledger_data = agent.env.ledger.get_data()
     if ledger_data["trades"]:
-        crud.add_trades(
-            self.session, request["agent_id"], ledger_data["trades"]
-        )
+        crud.add_trades(self.session, request["agent_id"], ledger_data["trades"])
     crud.add_balances(self.session, request["agent_id"], ledger_data)
     crud.update_agent(self.session, request["agent_id"], "test_done", 1)
     return
