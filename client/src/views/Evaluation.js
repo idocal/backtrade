@@ -8,6 +8,7 @@ function ledgerToChartData(ledger) {
     let balances = ledger.balances;
     let timestamps = ledger.timestamps
     let unixTimestamps = timestamps.map( (t, i) => {
+        t = t.replace('T', ' ');
         let date = parse(t, 'yyyy-MM-dd HH:mm:ss', new Date());
         return getTime(date);
     });
@@ -18,6 +19,7 @@ function ledgerToChartData(ledger) {
 }
 
 export default function Evaluation(props) {
+    console.log('evaluation');
     console.log(props.results);
 
     return (

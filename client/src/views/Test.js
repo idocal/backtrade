@@ -15,7 +15,7 @@ export default function Test() {
 
     function onTestEnd(res) {
         setLoading(false);
-        setResults(res.content);
+        setResults(res);
     }
 
     async function getTestResults() {

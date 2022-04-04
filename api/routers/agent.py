@@ -1,6 +1,7 @@
 from api.db.database import get_db
 from api.db import crud
 
+from loguru import logger
 from fastapi import APIRouter, Depends
 from secrets import token_hex
 from fastapi.responses import JSONResponse
@@ -65,7 +66,9 @@ async def agent_result(agent_id: str, db: Session = Depends(get_db)):
     data["candles"] = get_ohlcv(
         agent.symbols, agent.test_start, agent.test_end, agent.test_interval
     ).values.tolist()
+    logger.debug(data)
     content = jsonable_encoder({"success": True, "content": data})
+    logger.debug(content)
     return JSONResponse(content=content)
 
 
