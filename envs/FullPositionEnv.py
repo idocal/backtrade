@@ -29,6 +29,7 @@ class FullPositionEnv(Env):
         self.ledger = Ledger(self.config["initial_amount"])
         self.commission = config.get("commission", 0)
         self.step_idx = 1
+        self.episode = 1
         self.df = data.drop_duplicates()
         self.prev_obs = Observation.from_df(self.df.iloc[0])
         n_actions = len(symbols) + 2  # HOLD and SELL
@@ -93,7 +94,7 @@ class FullPositionEnv(Env):
 
     def step(self, action: int):
         if self.step_idx % 100 == 0:
-            logger.debug(f"Evaluating candle {self.step_idx}/{len(self.df)}")
+            logger.debug(f"Evaluating candle {self.step_idx}/{len(self.df)} | episode:{self.episode}")
             logger.debug(f"Taking action: {action}")
         candles = self.df.iloc[self.step_idx]
         obs = Observation.from_df(candles)
@@ -153,6 +154,8 @@ class FullPositionEnv(Env):
         next_obs = Observation.from_df(self.df.iloc[self.step_idx])
         observation = self._next_from_obs(next_obs)
         done = self.step_idx == len(self.df) - 1
+        if done:
+            self.episode += 1
         info = {}
 
         return observation, reward, done, info

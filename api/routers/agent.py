@@ -34,7 +34,7 @@ async def clear_agents(db: Session = Depends(get_db)):
 
 
 @router.get("/api/agent/get/{agent_id}")
-async def all_agents(agent_id: str, db: Session = Depends(get_db)):
+async def get_agent(agent_id: str, db: Session = Depends(get_db)):
     """
     Gets an agent
     """

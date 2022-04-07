@@ -28,7 +28,7 @@ class DBTask(Task):
 @app.task(name="train_task", base=DBTask, bind=True)
 def train_task(self, request):
     agent, env = initialize_agent_env(request, self.session)
-    num_train_steps = len(env.df)
+    num_train_steps = len(env.df) * request["n_episodes"]
     agent.learn(
         num_train_steps,
         callback=[StatusCallbackDB(self.session, request["agent_id"], num_train_steps)],
