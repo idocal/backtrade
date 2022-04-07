@@ -1,6 +1,6 @@
 import * as React from 'react';
+import _ from 'lodash';
 import { Link } from 'react-router-dom';
-import Button from '@mui/material/Button';
 import './Agents.css';
 
 
@@ -10,10 +10,22 @@ function Agents() {
     React.useEffect(() => {
       // declare the async data fetching function
       const fetchData = async () => {
-        const data = await fetch('/api/agent/all');
-        const json = await data.json();
-        setAgents(json.content);
-          console.log(json.content);
+          const URL = '/api/agent/all';
+
+          let done = false;
+          let interval = setInterval(async () => {
+              if (done) {
+                  clearInterval(interval);
+              }
+
+              const data = await fetch(URL);
+              const json = await data.json();
+              let res = json.content;
+              setAgents(res);
+              let numDone = _.sumBy(res, agent => agent.train_done);
+              done = numDone === res.length;
+
+          }, 100);
       }
 
       // call the function
@@ -24,20 +36,26 @@ function Agents() {
 
     return (
         <div className="agents">
-            { agents.map( (agent, i) => {
-                return (
-                    <div className="agent" key={i}>
-                        <Link to={ 'test/' + agent.id }>
-                            { 'Agent #' + (i + 1) }
-                        </Link>
-                    </div>
-                )
-            })}
-            <Link to="/train">
-                <Button variant="contained">
-                    Train
-                </Button>
-            </Link>
+            <div className="title">
+                <h2>Agents</h2>
+            </div>
+            <div className="list">
+                { agents.map( (agent, i) => {
+                    let progress = Math.min(agent.train_progress, 1) * 100;
+                    let done = progress === 100 ? " done" : "";
+                    progress = progress.toString() + "%";
+                    return (
+                        <div className="agent" key={i}>
+                            <Link to={ 'test/' + agent.id }>
+                                <p>{ 'Agent #' + (i + 1) }</p>
+                                <div className={ "progress-bar" + done }>
+                                    <div className="progress" style={{"width": progress}}/>
+                                </div>
+                            </Link>
+                        </div>
+                    )
+                })}
+            </div>
         </div>
     )
 }

@@ -19,3 +19,25 @@
 .agents button {
     margin-top: 20px;
 }
+
+.agents .list {
+    margin-top: 20px;
+}
+
+.agents .progress-bar {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: #35353535;
+}
+
+.agents .progress {
+    height: 100%;
+    background: linear-gradient(268.5deg, #FB03F5 -11.69%, #AA9CFF 112.48%);
+    width: 100%;
+    border-radius: 4px;
+}
+
+.agents .progress-bar.done .progress{
+    background: linear-gradient(268.5deg, #50AF95 -11.69%, #00FFB9 112.48%);
+}

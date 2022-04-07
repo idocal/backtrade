@@ -19,8 +19,6 @@ function ledgerToChartData(ledger) {
 }
 
 export default function Evaluation(props) {
-    console.log('evaluation');
-    console.log(props.results);
 
     return (
       <div className="evaluation modal">

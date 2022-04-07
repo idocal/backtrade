@@ -1,0 +1,57 @@
+.dashboard {
+    display: flex;
+    width: 100%;
+}
+
+.dashboard .active-agent {
+    width: 100%;
+    height: 500px;
+    display: flex;
+}
+
+.active-agent .metrics {
+    height: 100px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    padding: 0 40px;
+}
+
+.active-agent .metric {
+    display: flex;
+}
+
+.active-agent .metric .icon-wrapper {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(176, 176, 176, 0.1);
+    border-radius: 12px;
+}
+
+.active-agent .metric .icon {
+    width: 32px;
+    height: 32px;
+    display: block;
+}
+
+.active-agent .content {
+    margin: 5px 0 0 15px;
+}
+
+.active-agent .metric .content h3 {
+    padding: 0;
+    margin: 0;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+
+.active-agent .metric .content p {
+    padding: 0;
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+}

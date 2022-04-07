@@ -1,0 +1,22 @@
+.header {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.logo {
+    width: 122px;
+    height: 31px;
+    background-image: url('../img/lucent-logo.png');
+}
+
+.header .right-space {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.account-icon {
+    width: 48px;
+    height: 48px;
+    background-image: url('../img/account-icon.png')
+}
