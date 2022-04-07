@@ -1,14 +1,4 @@
-from sqlalchemy import (
-    Integer,
-    Column,
-    String,
-    Float,
-    PickleType,
-    ARRAY,
-    ForeignKey,
-    DateTime,
-    Date,
-)
+from sqlalchemy import *
 from sqlalchemy.orm import relationship
 
 from .database import Base
@@ -17,15 +7,12 @@ from .database import Base
 class Agent(Base):
     __tablename__ = "agents"
 
-    id = Column(String, primary_key=True)
+    id = Column(String, primary_key=True, unique=True)
     name = Column(String)
     train_progress = Column(Float, default=-1.0)
     train_done = Column(Integer, default=0)
     test_progress = Column(Float, default=-1.0)
     test_done = Column(Integer, default=0)
-    action = Column(String)
-    obs = Column(ARRAY(Float))
-    balance = Column(Float)
     task_id = Column(String, default="")
     symbols = Column(ARRAY(String))
     train_interval = Column(String)
@@ -33,15 +20,7 @@ class Agent(Base):
     train_end = Column(Date)
     train_initial_amount = Column(Float)
     train_commission = Column(Float)
-    train_episodes = Column(Integer)
-    last_trained = Column(DateTime, default=None)
-    test_interval = Column(String)
-    test_start = Column(Date)
-    test_end = Column(Date)
-    test_initial_amount = Column(Float)
-    test_commission = Column(Float)
-    test_balances = relationship("Balance", cascade="all, delete-orphan")
-    test_trades = relationship("Trade", cascade="all, delete-orphan")
+    test_task = relationship("Test", cascade="all, delete-orphan")
 
     def as_dict(self):
         return {c.name: getattr(self, c.name) for c in self.__table__.columns}
@@ -50,10 +29,23 @@ class Agent(Base):
         self.__setattr__(name, value)
 
 
+class Test(Base):
+    __tablename__ = "tests"
+    agent_id = Column(String, ForeignKey("agents.id", ondelete="CASCADE"))
+    task_id = Column(String, primary_key=True, unique=True)
+    interval = Column(String)
+    start = Column(Date)
+    end = Column(Date)
+    initial_amount = Column(Float)
+    commission = Column(Float)
+    balances = relationship("Balance", cascade="all, delete-orphan")
+    trades = relationship("Trade", cascade="all, delete-orphan")
+
+
 class Balance(Base):
     __tablename__ = "balances"
-    agent_id = Column(
-        String, ForeignKey("agents.id", ondelete="CASCADE"), primary_key=True
+    task_id = Column(
+        String, ForeignKey("tests.task_id", ondelete="CASCADE"), primary_key=True
     )
     timestamp = Column(DateTime, primary_key=True)
     balance = Column(Float, primary_key=True)
@@ -61,8 +53,8 @@ class Balance(Base):
 
 class Trade(Base):
     __tablename__ = "trades"
-    agent_id = Column(
-        String, ForeignKey("agents.id", ondelete="CASCADE"), primary_key=True
+    task_id = Column(
+        String, ForeignKey("tests.task_id", ondelete="CASCADE"), primary_key=True
     )
     idx = Column(Integer, primary_key=True)
     start_time = Column(DateTime)

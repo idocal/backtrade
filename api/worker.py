@@ -27,8 +27,8 @@ class DBTask(Task):
 
 @app.task(name="train_task", base=DBTask, bind=True)
 def train_task(self, request):
-    agent, env = initialize_agent_env(request, self.session)
-    num_train_steps = len(env.df) * request["n_episodes"]
+    agent, env = initialize_agent_env(request)
+    num_train_steps = len(env.df)
     agent.learn(
         num_train_steps,
         callback=[StatusCallbackDB(self.session, request["agent_id"], num_train_steps)],
@@ -43,8 +43,8 @@ def test_task(self, request):
     agent.load("models" + "/" + request["agent_id"])
     obs = env.reset()
     total_steps = len(env.df)
-    crud.delete_balances(self.session, request["agent_id"])
-    crud.delete_trades(self.session, request["agent_id"])
+    # crud.delete_balances(self.session, request["agent_id"])
+    # crud.delete_trades(self.session, request["agent_id"])
     logger.info(f"Testing agent on symbols:{request['symbols']}")
     while True:
         action = agent.predict(obs)
@@ -62,7 +62,7 @@ def test_task(self, request):
     logger.info("Saving test results to DB...")
     ledger_data = agent.env.ledger.get_data()
     if ledger_data["trades"]:
-        crud.add_trades(self.session, request["agent_id"], ledger_data["trades"])
-    crud.add_balances(self.session, request["agent_id"], ledger_data)
+        crud.add_trades(self.session, self.request.id, ledger_data["trades"])
+    crud.add_balances(self.session, self.request.id, ledger_data)
     crud.update_agent(self.session, request["agent_id"], "test_done", 1)
     return
