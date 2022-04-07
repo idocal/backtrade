@@ -50,7 +50,7 @@ async def train(
             "train_initial_amount",
             "train_commission",
             "train_episodes",
-            "last_trained"
+            "last_trained",
         ],
         [
             request.name,
@@ -62,8 +62,8 @@ async def train(
             request.initial_amount,
             request.commission,
             request.n_episodes,
-            datetime.datetime.now()
+            datetime.datetime.now(),
         ],
     )
-
-    return JSONResponse(content={"success": True, "content": request.agent_id})
+    content = {"agent_id": request.agent_id}
+    return JSONResponse(content={"success": True, "content": content})
