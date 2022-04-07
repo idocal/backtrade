@@ -68,6 +68,7 @@ class Ledger:
             "balances": self.balances,
             "timestamps": self.timestamps,
             "trade_points": self.trade_points,
+            "last_balance": self.balances[-1]
         }
 
     def log_trade(self, trade: Trade):

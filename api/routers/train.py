@@ -1,3 +1,4 @@
+import datetime
 from typing import List, Optional
 
 from data.providers import VALID_SYMBOLS, VALID_INTERVALS
@@ -16,6 +17,7 @@ from pydantic import Field, validator
 class TrainRequest(RunRequest):
     symbols: List[str] = Field(..., description=f"Enter a subset of {VALID_SYMBOLS}")
     name: Optional[str]
+    n_episodes: int = Field(1, description="Enter number of episodes to train")
 
     @validator("symbols")
     def ensure_allowed_symbols(cls, symbols):
@@ -39,25 +41,29 @@ async def train(
         db,
         request.agent_id,
         [
+            "name",
             "task_id",
             "symbols",
             "train_interval",
             "train_start",
             "train_end",
-            "name",
             "train_initial_amount",
             "train_commission",
+            "train_episodes",
+            "last_trained",
         ],
         [
+            request.name,
             task.id,
             request.symbols,
             request.interval,
             request.start_date,
             request.end_date,
-            request.name,
             request.initial_amount,
             request.commission,
+            request.n_episodes,
+            datetime.datetime.now(),
         ],
     )
-
-    return JSONResponse(content={"success": True, "content": request.agent_id})
+    content = {"agent_id": request.agent_id}
+    return JSONResponse(content={"success": True, "content": content})

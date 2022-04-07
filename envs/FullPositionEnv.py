@@ -2,6 +2,8 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 from gym import spaces, Env
+
+from api.db import crud
 from envs.utils import Ledger, Trade, Observation
 from candles import Candle
 
@@ -14,9 +16,11 @@ class FullPositionEnv(Env):
     2-(n+1): BUY (n-1)th asset
     """
 
-    def __init__(self, config, symbols, data: pd.DataFrame):
+    def __init__(self, config, symbols, data: pd.DataFrame, db=None):
         super(FullPositionEnv, self).__init__()
         self.config = config
+        self.agent_id = config["agent_id"]
+        self.db = db
         self.cash = config["initial_amount"]
         self.symbols = symbols
         self.position = 0.0
@@ -25,6 +29,7 @@ class FullPositionEnv(Env):
         self.ledger = Ledger(self.config["initial_amount"])
         self.commission = config.get("commission", 0)
         self.step_idx = 1
+        self.episode = 1
         self.df = data.drop_duplicates()
         self.prev_obs = Observation.from_df(self.df.iloc[0])
         n_actions = len(symbols) + 2  # HOLD and SELL
@@ -35,6 +40,10 @@ class FullPositionEnv(Env):
             low=np.append(self.candle_low_bound, 0),
             high=np.append(self.candle_high_bound, 1),
         )  # OHLCV + is_trading
+        self.actions = {
+            **{0: "HOLD", 1: "SELL"},
+            **{n: self.symbols[n - 2] for n in range(2, len(self.symbols) + 2)},
+        }
 
     def balance(self, asset_price):
         return self.cash + self.position * asset_price
@@ -52,7 +61,7 @@ class FullPositionEnv(Env):
             num_units=num_units,
             idx=self.step_idx,
             commission=commission,
-            symbol=self.symbols[symbol_idx]
+            symbol=self.symbols[symbol_idx],
         )
         self.cash = 0
         self.position += num_units
@@ -85,7 +94,7 @@ class FullPositionEnv(Env):
 
     def step(self, action: int):
         if self.step_idx % 100 == 0:
-            logger.debug(f"Evaluating candle {self.step_idx}/{len(self.df)}")
+            logger.debug(f"Evaluating candle {self.step_idx}/{len(self.df)} | episode:{self.episode}")
             logger.debug(f"Taking action: {action}")
         candles = self.df.iloc[self.step_idx]
         obs = Observation.from_df(candles)
@@ -121,9 +130,19 @@ class FullPositionEnv(Env):
             if self.curr_trade is not None:
                 symbol_idx = self.symbols.index(self.curr_trade.symbol)
                 asset_price = obs.data[symbol_idx + 4]  # close price
-
         # update env with action
-        next_balance = self.balance(asset_price)  # TODO: this does not hold for all cases
+        next_balance = self.balance(
+            asset_price
+        )  # TODO: this does not hold for all cases
+
+        if self.db:
+            crud.update_agent(
+                self.db,
+                self.agent_id,
+                ["action", "obs", "balance"],
+                [self.actions[action], obs.data.tolist(), float(next_balance)],
+            )
+
         self.ledger.log_balance(self.curr_balance, obs.timestamp)
         if is_legal_action:
             reward = next_balance - self.curr_balance
@@ -135,6 +154,8 @@ class FullPositionEnv(Env):
         next_obs = Observation.from_df(self.df.iloc[self.step_idx])
         observation = self._next_from_obs(next_obs)
         done = self.step_idx == len(self.df) - 1
+        if done:
+            self.episode += 1
         info = {}
 
         return observation, reward, done, info

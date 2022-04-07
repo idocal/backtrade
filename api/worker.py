@@ -43,16 +43,14 @@ def test_task(self, request):
     agent.load("models" + "/" + request["agent_id"])
     obs = env.reset()
     total_steps = len(env.df)
-    crud.delete_balances(self.session, request["agent_id"])
-    crud.delete_trades(self.session, request["agent_id"])
     logger.info(f"Testing agent on symbols:{request['symbols']}")
     while True:
         action = agent.predict(obs)
         obs, reward, done, info = env.step(action)
-        crud.update_agent(
+        crud.update_evaluation(
             self.session,
-            request["agent_id"],
-            "test_progress",
+            self.request.id,
+            "evaluation_progress",
             env.step_idx / total_steps,
         )
         if done:
@@ -62,9 +60,12 @@ def test_task(self, request):
     logger.info("Saving test results to DB...")
     ledger_data = agent.env.ledger.get_data()
     if ledger_data["trades"]:
-        crud.add_trades(
-            self.session, request["agent_id"], ledger_data["trades"]
-        )
-    crud.add_balances(self.session, request["agent_id"], ledger_data)
-    crud.update_agent(self.session, request["agent_id"], "test_done", 1)
+        crud.add_trades(self.session, self.request.id, ledger_data["trades"])
+    crud.add_balances(self.session, self.request.id, ledger_data)
+    crud.update_evaluation(
+        self.session,
+        self.request.id,
+        ["evaluation_done", "last_balance"],
+        [1, ledger_data["last_balance"]],
+    )
     return
