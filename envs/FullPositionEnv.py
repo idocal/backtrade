@@ -3,7 +3,7 @@ import pandas as pd
 from loguru import logger
 from gym import spaces, Env
 
-from db import crud
+from api.db import crud
 from envs.utils import Ledger, Trade, Observation
 from candles import Candle
 
