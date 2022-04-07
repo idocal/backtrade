@@ -34,6 +34,7 @@ class Agent(Base):
     train_initial_amount = Column(Float)
     train_commission = Column(Float)
     train_episodes = Column(Integer)
+    last_trained = Column(DateTime, default=None)
     test_interval = Column(String)
     test_start = Column(Date)
     test_end = Column(Date)

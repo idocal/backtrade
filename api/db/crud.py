@@ -13,7 +13,7 @@ def get_agent(db: Session, agent_id: str) -> models.Agent:
 
 
 def get_all_agents(db: Session):
-    return db.query(models.Agent).all()
+    return db.query(models.Agent).filter(models.Agent.last_trained != None).order_by(models.Agent.last_trained).all()
 
 
 def update_agent(

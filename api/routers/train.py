@@ -1,3 +1,4 @@
+import datetime
 from typing import List, Optional
 
 from data.providers import VALID_SYMBOLS, VALID_INTERVALS
@@ -48,7 +49,8 @@ async def train(
             "train_end",
             "train_initial_amount",
             "train_commission",
-            "train_episodes"
+            "train_episodes",
+            "last_trained"
         ],
         [
             request.name,
@@ -59,7 +61,8 @@ async def train(
             request.end_date,
             request.initial_amount,
             request.commission,
-            request.n_episodes
+            request.n_episodes,
+            datetime.datetime.now()
         ],
     )
 
