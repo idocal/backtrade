@@ -1,5 +1,6 @@
 import * as React from 'react';
 import _ from 'lodash';
+import { isValid, format } from 'date-fns';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import BasicDatePicker from '../components/BasicDatePicker';
@@ -16,8 +17,8 @@ export default function Train() {
     const navigate = useNavigate();
 
     const [interval, _setInterval] = React.useState('1h');
-    const [startDate, setStartDate] = React.useState('');
-    const [endDate, setEndDate] = React.useState('');
+    const [startDate, setStartDate] = React.useState(new Date('2019-01-01T00:00:00'));
+    const [endDate, setEndDate] = React.useState(new Date('2020-01-01T00:00:00'));
     const [initialAmount, setInitialAmount] = React.useState(10000);
     const [numEpisodes, setNumEpisodes] = React.useState(1);
     const [checkedAssets, setCheckedAssets] = React.useState(["BTC", "ETH"]);
@@ -37,12 +38,20 @@ export default function Train() {
     }
 
     async function onTrainClick() {
+        let formattedStartDate;
+        let formattedEndDate;
+        if (isValid(startDate)) {
+            formattedStartDate = format(startDate, "yyyy-MM-dd");
+        }
+        if (isValid(endDate)) {
+            formattedEndDate = format(endDate, "yyyy-MM-dd");
+        }
         let config = {
             "provider": PROVIDER,
             "symbols": checkedAssets,
             "interval": interval,
-            "start_date": startDate,
-            "end_date": endDate,
+            "start_date": formattedStartDate,
+            "end_date": formattedEndDate,
             "initial_amount": initialAmount,
             "n_episodes": numEpisodes,
             "commission": 0.00075
@@ -66,12 +75,12 @@ export default function Train() {
         _setInterval(e.target.value);
     }
 
-    function handleStartSelect(formattedDate) {
-        setStartDate(formattedDate);
+    function handleStartSelect(date) {
+        setStartDate(date);
     }
 
-    function handleEndSelect(formattedDate) {
-        setEndDate(formattedDate);
+    function handleEndSelect(date) {
+        setEndDate(date);
     }
 
     function handleAmountSelect(e) {
@@ -102,8 +111,8 @@ export default function Train() {
                     </div>
                     <div className="settings">
                         <div className="group">
-                            <BasicDatePicker label="Start Date" handleChange={handleStartSelect} defaultValue={new Date('2019-01-01T00:00:00')} />
-                            <BasicDatePicker label="End Date" handleChange={handleEndSelect} defaultValue={new Date('2020-01-01T00:00:00')} />
+                            <BasicDatePicker label="Start Date" handleChange={handleStartSelect} defaultValue={startDate} />
+                            <BasicDatePicker label="End Date" handleChange={handleEndSelect} defaultValue={endDate} />
                         </div>
                         <div className="group">
                             <BasicSelect label="Interval" defaultValue={interval} options={defaults.intervals} handleChange={handleIntervalSelect} />
@@ -130,11 +139,14 @@ export default function Train() {
                     </div>
                 </div>
             </div>
-            <div className="box right-space">
+            <div className="box right-space summary">
                 <div className="title">
                     <h2>Summary</h2>
-                    <Button variant="contained" onClick={ onTrainClick }>Train</Button>
                 </div>
+                <div className="details">
+
+                </div>
+                <Button variant="contained" onClick={ onTrainClick }>Train</Button>
             </div>
         </div>
     )

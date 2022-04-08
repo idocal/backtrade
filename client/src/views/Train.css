@@ -44,3 +44,12 @@
 .train .assets {
     margin-top: 20px;
 }
+
+.train .summary {
+    display: flex;
+    flex-direction: column;
+}
+
+.train .summary .details {
+    flex: auto;
+}
