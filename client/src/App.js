@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { Routes, Route, Link } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Train from './views/Train';
+import Evaluate from './views/Evaluate';
 import Test from './views/Test';
 import Dashboard from './views/Dashboard';
-import Agents from './views/Agents';
 import Header from './views/Header';
 import Navbar from './views/Navbar';
 import './App.css';
@@ -18,6 +18,7 @@ function App() {
             <Routes>
                 <Route exact path="/" element={ <Dashboard /> } />
                 <Route path="/train" element={ <Train /> } />
+                <Route path="/evaluate" element={ <Evaluate /> } />
                 <Route path="/test/:agentId" element={ <Test /> } />
             </Routes>
         </div>

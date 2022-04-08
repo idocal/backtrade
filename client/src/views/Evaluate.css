@@ -1,0 +1,31 @@
+.evaluate {
+    display: flex;
+    width: 100%;
+}
+
+.evaluate .agents-table {
+    margin-top: 40px;
+}
+
+.evaluate .agents-table, .evaluate .agents-table .MuiDataGrid-root,
+.evaluate .agents-table .MuiTablePagination-root {
+    color: #fff;
+    border: none;
+}
+
+.evaluate .agents-table button, .evaluate .agents-table svg {
+    color: #fff;
+}
+
+.evaluate .agents-table .MuiDataGrid-cell {
+    border: none;
+    outline: none;
+}
+
+.evaluate .agents-table .MuiDataGrid-columnSeparator {
+    display: none;
+}
+
+.evaluate .agents-table .MuiDataGrid-footerContainer {
+    border-top: none;
+}

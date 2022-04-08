@@ -1,10 +1,6 @@
-.train, .test {
+.train {
     display: flex;
     width: 100%;
-}
-
-.train .right-space {
-
 }
 
 .train .settings {
