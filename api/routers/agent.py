@@ -84,9 +84,9 @@ async def agent_result(agent_id: str, db: Session = Depends(get_db)):
     data["candles"] = get_ohlcv(
         agent.symbols, agent.test_start, agent.test_end, agent.test_interval
     ).values.tolist()
-    logger.debug(data)
+    # logger.debug(data)
     content = jsonable_encoder({"success": True, "content": data})
-    logger.debug(content)
+    # logger.debug(content)
     return JSONResponse(content=content)
 
 
