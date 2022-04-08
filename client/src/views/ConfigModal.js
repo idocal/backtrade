@@ -3,6 +3,7 @@ import BasicSelect from '../components/BasicSelect';
 import BasicDatePicker from '../components/BasicDatePicker';
 import Button from '@mui/material/Button';
 import MultipleSelectChip from '../components/MultipleSelectChip';
+import './ConfigModal.css';
 
 const PROVIDER = 'binance';
 

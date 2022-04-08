@@ -36,20 +36,6 @@ h1, h2, h3, h4 {
     justify-content: center;
 }
 
-.modal {
-    width: 100%;
-    max-width: 600px;
-    background: #fff;
-    padding: 32px;
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-}
-
-.modal > div {
-    margin: 0 0 32px 0;
-    width: 100%;
-}
 
 .highcharts-credits {
     display: none;

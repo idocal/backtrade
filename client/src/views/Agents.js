@@ -47,7 +47,7 @@ function Agents() {
                     return (
                         <div className="agent" key={i}>
                             <Link to={ 'test/' + agent.id }>
-                                <p>{ 'Agent #' + (i + 1) }</p>
+                                <p>{ 'Agent #' + (agents.length - i) }</p>
                                 <div className={ "progress-bar" + done }>
                                     <div className="progress" style={{"width": progress}}/>
                                 </div>

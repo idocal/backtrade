@@ -22,6 +22,7 @@ export default function BasicSelect(props) {
           id="demo-simple-select"
           value={val}
           label={props.label}
+          defaultValue={props.defaultValue}
           onChange={handleChange}
         >
       {
