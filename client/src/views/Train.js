@@ -1,8 +1,11 @@
 import * as React from 'react';
+import _ from 'lodash';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
 import BasicDatePicker from '../components/BasicDatePicker';
 import BasicSelect from '../components/BasicSelect';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import defaults from '../defaults';
 import { useNavigate } from "react-router-dom";
 import './Train.css';
@@ -12,12 +15,12 @@ const PROVIDER = 'binance';
 export default function Train() {
     const navigate = useNavigate();
 
-    const [symbol, setSymbol] = React.useState([]);
     const [interval, _setInterval] = React.useState('1h');
     const [startDate, setStartDate] = React.useState('');
     const [endDate, setEndDate] = React.useState('');
     const [initialAmount, setInitialAmount] = React.useState(10000);
     const [numEpisodes, setNumEpisodes] = React.useState(1);
+    const [checkedAssets, setCheckedAssets] = React.useState(["BTC", "ETH"]);
 
     async function trainAgent(config) {
         console.log('training agent with config: ');
@@ -36,7 +39,7 @@ export default function Train() {
     async function onTrainClick() {
         let config = {
             "provider": PROVIDER,
-            "symbols": symbol,
+            "symbols": checkedAssets,
             "interval": interval,
             "start_date": startDate,
             "end_date": endDate,
@@ -59,10 +62,6 @@ export default function Train() {
         });
     }
 
-    function handleAssetSelect(e) {
-        setSymbol(e.target.value);
-    }
-    
     function handleIntervalSelect(e) {
         _setInterval(e.target.value);
     }
@@ -83,6 +82,17 @@ export default function Train() {
         setNumEpisodes(e.target.value);
     }
 
+    function checkAsset(asset) {
+        let assetIndex = checkedAssets.indexOf(asset);
+        if (assetIndex < 0) {
+            setCheckedAssets([...checkedAssets, asset]);
+        } else {
+            let tmpAssets = [...checkedAssets]
+            _.pull(tmpAssets, asset);
+            setCheckedAssets(tmpAssets);
+        }
+    }
+
     return (
         <div className="train">
             <div className="main-space">
@@ -92,8 +102,8 @@ export default function Train() {
                     </div>
                     <div className="settings">
                         <div className="group">
-                            <BasicDatePicker label="Start Date" handleChange={handleStartSelect}/>
-                            <BasicDatePicker label="End Date" handleChange={handleEndSelect} />
+                            <BasicDatePicker label="Start Date" handleChange={handleStartSelect} defaultValue={new Date('2019-01-01T00:00:00')} />
+                            <BasicDatePicker label="End Date" handleChange={handleEndSelect} defaultValue={new Date('2020-01-01T00:00:00')} />
                         </div>
                         <div className="group">
                             <BasicSelect label="Interval" defaultValue={interval} options={defaults.intervals} handleChange={handleIntervalSelect} />
@@ -102,9 +112,21 @@ export default function Train() {
                         </div>
                     </div>
                 </div>
-                <div className="box assets">
+                <div className="box assets-manager">
                     <div className="title">
                         <h2>Assets Manager</h2>
+                        <div className="assets">
+                            { defaults.assets.map( (asset, i) => {
+                                return (
+                                    <FormControlLabel
+                                        key={i}
+                                        label={asset}
+                                        checked={checkedAssets.indexOf(asset) > -1}
+                                        control={<Checkbox onChange={() => {checkAsset(asset)}} />}
+                                    />
+                                )
+                            })}
+                        </div>
                     </div>
                 </div>
             </div>

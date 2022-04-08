@@ -1,5 +1,5 @@
 const defaults = {
-    "coins": [
+    "assets": [
         "BTC",
         "ETH",
         "BNB"

@@ -37,6 +37,10 @@
     justify-content: space-between;
 }
 
-.train .assets {
+.train .assets-manager {
     margin-top: 40px;
+}
+
+.train .assets {
+    margin-top: 20px;
 }

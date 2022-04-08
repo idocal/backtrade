@@ -6,7 +6,7 @@ import DatePicker from '@mui/lab/DatePicker';
 import { isValid, format } from 'date-fns';
 
 export default function BasicDatePicker(props) {
-  const [val, setVal] = React.useState(null);
+  const [val, setVal] = React.useState(props.defaultValue);
 
   const handleChange = (date) => {
         setVal(date);
@@ -21,6 +21,7 @@ export default function BasicDatePicker(props) {
       <DatePicker
         label={props.label}
         value={val}
+        defaultValue={props.defaultValue}
         onChange={handleChange}
         renderInput={(params) => <TextField {...params} />}
       />
