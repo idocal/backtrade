@@ -7,13 +7,13 @@
     margin-top: 40px;
 }
 
-.evaluate .agents-table, .evaluate .agents-table .MuiDataGrid-root,
-.evaluate .agents-table .MuiTablePagination-root {
+.evaluate .agents-table, .evaluate .MuiDataGrid-root,
+.evaluate .MuiTablePagination-root {
     color: #fff;
     border: none;
 }
 
-.evaluate .agents-table button, .evaluate .agents-table svg {
+.evaluate button, .evaluate svg {
     color: #fff;
 }
 
@@ -26,6 +26,18 @@
     display: none;
 }
 
-.evaluate .agents-table .MuiDataGrid-footerContainer {
+.evaluate .MuiDataGrid-footerContainer {
     border-top: none;
 }
+
+.evaluate .MuiDataGrid-virtualScroller::-webkit-scrollbar {
+    background: none;        /* color of the tracking area */
+    width: 6px;
+}
+
+.evaluate .MuiDataGrid-virtualScroller::-webkit-scrollbar-thumb {
+    background: #fff;        /* color of the tracking area */
+    width: 10px;
+    border-radius: 8px;
+}
+
