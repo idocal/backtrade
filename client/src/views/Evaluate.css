@@ -41,3 +41,36 @@
     border-radius: 8px;
 }
 
+.evaluate .details input, .evaluate .details label,
+.evaluate .details svg, .evaluate .details select,
+.evaluate .details .MuiSelect-select {
+    color: #fff;
+}
+
+.evaluate .details input, .evaluate .details .MuiOutlinedInput-root {
+    border-color: #fff;
+    background: #323232;
+    border-radius: 4px;
+}
+
+.evaluate .details .control {
+    margin-top: 40px;
+    width: 100%;
+}
+
+.evaluate .details .control .MuiFormControl-root {
+    width: 100%;
+}
+
+.evaluate .summary {
+    display: flex;
+    flex-direction: column;
+}
+
+.evaluate .summary .details {
+    flex: auto;
+}
+
+.evaluate .summary .Mui-disabled {
+    color: #666;
+}
