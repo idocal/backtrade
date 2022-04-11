@@ -1,4 +1,5 @@
 import * as React from 'react';
+import _ from 'lodash';
 import TextField from '@mui/material/TextField';
 import BasicDatePicker from '../components/BasicDatePicker';
 import Button from '@mui/material/Button';
@@ -58,10 +59,12 @@ function Evaluate() {
         const data = await fetch(URL);
         const json = await data.json();
         let res = json.content;
-        res['id'] = res.agent_id;
-        res['last_balance'] = res['last_balance'].toFixed(2);
+        console.log(res);
+        res['id'] = res.evaluation_id;
+        res['last_balance'] = res.last_balance && res['last_balance'].toFixed(2);
         res['date'] = res['date'].replace('T', ' ');
         res['date'] = res['date'].split('.')[0];
+        res['evaluation_progress'] = Math.max(0, res.evaluation_progress);
         res['evaluation_progress'] = res['evaluation_progress'].toFixed(2) * 100 + "%";
         if (res["evaluation_done"] === 1) {
             res['evaluation_progress'] = "100%";
@@ -69,22 +72,37 @@ function Evaluate() {
         return res;
     }
 
-    React.useEffect(() => {
-
-        const fetchEvals = async (evalIds) => {
-            let allEvals = [];
-            for ( const evalId of evalIds ) {
-                let res = await fetchEval(evalId);
-                console.log(res);
-                allEvals = [...allEvals, res];
-            }
-            return allEvals;
+    const fetchEvals = async (evalIds) => {
+        let allEvals = [];
+        for ( const evalId of evalIds ) {
+            let res = await fetchEval(evalId);
+            allEvals = [...allEvals, res];
         }
-        let evalIds = JSON.parse(localStorage.getItem("evals"));
-        fetchEvals(evalIds)
-        .then( (r) => {setEvals(r)} )
-        // make sure to catch any error
-        .catch(console.error);;
+        return allEvals;
+    }
+
+    const updateEvals = () => {
+        let localEvals = localStorage.getItem("evals");
+        let evalIds = !localEvals ? [] : JSON.parse(localEvals);
+        let done = false;
+
+        let interv = setInterval(async () => {
+            if (done) {
+                clearInterval(interv);
+            }
+            fetchEvals(evalIds)
+                .then( (r) => {
+                    setEvals(r);
+                    let numDone = _.sumBy(r, e => e.evaluation_done);
+                    done = numDone === r.length;
+                } )
+                .catch(console.error);
+
+        }, 100);
+    }
+
+    React.useEffect(() => {
+        updateEvals();
     }, [])
 
 
@@ -134,6 +152,7 @@ function Evaluate() {
             allEvals = !allEvals ? [] : allEvals;  // if no evals exist
             let newEvals = [...allEvals, evalId];
             localStorage.setItem("evals", JSON.stringify(newEvals));
+            updateEvals();
         })
     }
 
@@ -176,7 +195,6 @@ function Evaluate() {
                                 pageSize={10}
                             />
                         </div>
-                        { localStorage.getItem("evals") && JSON.parse(localStorage.getItem("evals")).toString() }
                     </div>
                 </div>
             </div>
