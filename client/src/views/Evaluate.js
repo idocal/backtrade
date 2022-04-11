@@ -17,11 +17,12 @@ const columns = [
 
 function Evaluate() {
 
+    const [evals, setEvals] = React.useState([]);
     const [agents, setAgents] = React.useState([]);
     const [selectedAgent, setSelectedAgent] = React.useState('');
     const [interval, setInterval] = React.useState('');
     const [startDate, setStartDate] = React.useState(new Date('2020-01-01T00:00:00'));
-    const [endDate, setEndDate] = React.useState(new Date('2021-01-01T00:00:00'));
+    const [endDate, setEndDate] = React.useState(new Date('2020-02-01T00:00:00'));
     const [initialAmount, setInitialAmount] = React.useState(10000);
 
     React.useEffect(() => {
@@ -72,7 +73,7 @@ function Evaluate() {
         }
 
         const URL = '/api/test';
-        return await fetch(URL, {
+        const res = await fetch(URL, {
             method: 'POST',
             headers: {
                 Accept: 'application/json',
@@ -80,6 +81,14 @@ function Evaluate() {
             },
             body: JSON.stringify(config)
         });
+        res.json().then( r => {
+            let evalId = r.content.evaluation_id;
+            let allEvals = JSON.parse(localStorage.getItem("evals"));
+            allEvals = !allEvals ? [] : allEvals;  // if no evals exist
+            let newEvals = [...allEvals, evalId];
+            localStorage.setItem("evals", JSON.stringify(newEvals));
+            setEvals(newEvals);
+        })
     }
 
     return (
@@ -107,6 +116,14 @@ function Evaluate() {
                                 }
                             }}
                         />
+                    </div>
+                </div>
+                <div className="evals">
+                    <div className="box">
+                        <div className="title">
+                            <h2>Evaluations</h2>
+                        </div>
+                        { localStorage.getItem("evals") && JSON.parse(localStorage.getItem("evals")).toString() }
                     </div>
                 </div>
             </div>

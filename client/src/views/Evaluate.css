@@ -65,6 +65,7 @@
 .evaluate .summary {
     display: flex;
     flex-direction: column;
+    max-height: 500px;
 }
 
 .evaluate .summary .details {
@@ -73,4 +74,8 @@
 
 .evaluate .summary .Mui-disabled {
     color: #666;
+}
+
+.evaluate .evals {
+    margin-top: 40px;
 }
