@@ -102,6 +102,8 @@ class FullPositionEnv(Env):
         reward = 0
         asset_price = 0
 
+        close_price_by_symbol_idx = lambda x: obs.data[x * 5 + 3]
+
         # perform actions
         if action > 1:  # BUY asset
             if self.curr_trade:
@@ -110,11 +112,12 @@ class FullPositionEnv(Env):
                     logger.warning(f"Action {action} is illegal!")
                 is_legal_action = False
                 reward = float("-inf")
+                symbol_idx = self.symbols.index(self.curr_trade.symbol)
+                asset_price = close_price_by_symbol_idx(symbol_idx)
             else:
                 symbol_idx = action - 2
-                asset_price = obs.data[symbol_idx + 4]  # close price
+                asset_price = close_price_by_symbol_idx(symbol_idx)
                 self.buy(asset_price, obs.timestamp, symbol_idx)
-
         elif action == 1:  # SELL
             if self.curr_trade is None:
                 # cannot perform sell action while not in position
@@ -122,15 +125,16 @@ class FullPositionEnv(Env):
                     logger.warning(f"Action {action} is illegal!")
                 is_legal_action = False
                 reward = float("-inf")
+                asset_price = 0
             else:
                 symbol_idx = self.symbols.index(self.curr_trade.symbol)
-                asset_price = obs.data[symbol_idx + 4]  # close price
+                asset_price = close_price_by_symbol_idx(symbol_idx)
                 self.sell(asset_price, obs.timestamp)
-        else:  # HOLD
+        elif action == 0:  # HOLD
             if self.curr_trade is not None:
                 symbol_idx = self.symbols.index(self.curr_trade.symbol)
-                asset_price = obs.data[symbol_idx + 4]  # close price
-        # update env with action
+                asset_price = close_price_by_symbol_idx(symbol_idx)
+
         next_balance = self.balance(
             asset_price
         )  # TODO: this does not hold for all cases
@@ -143,10 +147,13 @@ class FullPositionEnv(Env):
                 [self.actions[action], obs.data.tolist(), float(next_balance)],
             )
 
-        self.ledger.log_balance(self.curr_balance, obs.timestamp)
+        self.ledger.log_balance(next_balance, obs.timestamp)
+        self.curr_balance = next_balance
+
+        # update env with action
         if is_legal_action:
             reward = next_balance - self.curr_balance
-        self.curr_balance = next_balance
+
 
         # proceed to next step
         self.step_idx += 1  # start from the 2nd observation
