@@ -5,9 +5,10 @@
     -ms-box-sizing: border-box;
 }
 
-html, body {
-    width: 100%;
-    height: 100%;
+
+body {
+  min-height: 100vh;
+  background: radial-gradient(circle farthest-side, #612270, #080808);
 }
 
 h1, h2, h3, h4 {
@@ -22,8 +23,6 @@ h1, h2, h3, h4 {
 .App {
     width: 100%;
     height: 100%;
-    background: #080808;
-    background: radial-gradient(circle farthest-side, #612270, #080808);
     color: #393A3E;
     color: #fff;
     padding: 40px;

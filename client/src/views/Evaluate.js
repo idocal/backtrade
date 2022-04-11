@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useNavigate } from "react-router-dom";
 import _ from 'lodash';
 import TextField from '@mui/material/TextField';
 import BasicDatePicker from '../components/BasicDatePicker';
@@ -15,16 +16,12 @@ const columns = [
     { field: 'train_interval', headerName: 'Interval', width: 70 },
     { field: 'symbols', headerName: 'Assets', width: 150 }
 ];
+
 const evalCols = [
     { field: 'date', headerName: 'Date', width: 170 },
     { field: 'initial_amount', headerName: 'Initial Amount', width: 130 },
     { field: 'last_balance', headerName: 'Balance', width: 130 },
     { field: 'evaluation_progress', headerName: 'Progress', width: 130 }
-];
-
-let evalss = [
-    { 'id': 'a', 'date': '2020-01-01', 'initial_amount': 1000, 'last_balance': 15000 },
-    { 'id': 'b', 'date': '2020-01-01', 'initial_amount': 1000, 'last_balance': 16000 },
 ];
 
 function Evaluate() {
@@ -36,6 +33,8 @@ function Evaluate() {
     const [startDate, setStartDate] = React.useState(new Date('2020-01-01T00:00:00'));
     const [endDate, setEndDate] = React.useState(new Date('2020-02-01T00:00:00'));
     const [initialAmount, setInitialAmount] = React.useState(10000);
+
+    let navigate = useNavigate();
 
     React.useEffect(() => {
       // declare the async data fetching function
@@ -59,7 +58,6 @@ function Evaluate() {
         const data = await fetch(URL);
         const json = await data.json();
         let res = json.content;
-        console.log(res);
         res['id'] = res.evaluation_id;
         res['last_balance'] = res.last_balance && res['last_balance'].toFixed(2);
         res['date'] = res['date'].replace('T', ' ');
@@ -193,7 +191,12 @@ function Evaluate() {
                                 rows={evals}
                                 columns={evalCols}
                                 pageSize={10}
+                                onSelectionModelChange={ (ids) => {
+                                    let evalId = ids[0];
+                                    navigate(`/evaluate/${evalId}`);
+                                }}
                             />
+                            { localStorage.getItem("evals").toString() }
                         </div>
                     </div>
                 </div>
