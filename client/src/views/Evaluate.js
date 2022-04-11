@@ -14,13 +14,24 @@ const columns = [
     { field: 'train_interval', headerName: 'Interval', width: 70 },
     { field: 'symbols', headerName: 'Assets', width: 150 }
 ];
+const evalCols = [
+    { field: 'date', headerName: 'Date', width: 170 },
+    { field: 'initial_amount', headerName: 'Initial Amount', width: 130 },
+    { field: 'last_balance', headerName: 'Balance', width: 130 },
+    { field: 'evaluation_progress', headerName: 'Progress', width: 130 }
+];
+
+let evalss = [
+    { 'id': 'a', 'date': '2020-01-01', 'initial_amount': 1000, 'last_balance': 15000 },
+    { 'id': 'b', 'date': '2020-01-01', 'initial_amount': 1000, 'last_balance': 16000 },
+];
 
 function Evaluate() {
 
     const [evals, setEvals] = React.useState([]);
     const [agents, setAgents] = React.useState([]);
     const [selectedAgent, setSelectedAgent] = React.useState('');
-    const [interval, setInterval] = React.useState('');
+    const [interval, _setInterval] = React.useState('');
     const [startDate, setStartDate] = React.useState(new Date('2020-01-01T00:00:00'));
     const [endDate, setEndDate] = React.useState(new Date('2020-02-01T00:00:00'));
     const [initialAmount, setInitialAmount] = React.useState(10000);
@@ -40,6 +51,42 @@ function Evaluate() {
         // make sure to catch any error
         .catch(console.error);;
     }, [])
+
+
+    const fetchEval = async (evalId) => {
+        const URL = '/api/evaluation/get/' + evalId;
+        const data = await fetch(URL);
+        const json = await data.json();
+        let res = json.content;
+        res['id'] = res.agent_id;
+        res['last_balance'] = res['last_balance'].toFixed(2);
+        res['date'] = res['date'].replace('T', ' ');
+        res['date'] = res['date'].split('.')[0];
+        res['evaluation_progress'] = res['evaluation_progress'].toFixed(2) * 100 + "%";
+        if (res["evaluation_done"] === 1) {
+            res['evaluation_progress'] = "100%";
+        }
+        return res;
+    }
+
+    React.useEffect(() => {
+
+        const fetchEvals = async (evalIds) => {
+            let allEvals = [];
+            for ( const evalId of evalIds ) {
+                let res = await fetchEval(evalId);
+                console.log(res);
+                allEvals = [...allEvals, res];
+            }
+            return allEvals;
+        }
+        let evalIds = JSON.parse(localStorage.getItem("evals"));
+        fetchEvals(evalIds)
+        .then( (r) => {setEvals(r)} )
+        // make sure to catch any error
+        .catch(console.error);;
+    }, [])
+
 
     function handleStartSelect(date) {
         setStartDate(date);
@@ -87,7 +134,6 @@ function Evaluate() {
             allEvals = !allEvals ? [] : allEvals;  // if no evals exist
             let newEvals = [...allEvals, evalId];
             localStorage.setItem("evals", JSON.stringify(newEvals));
-            setEvals(newEvals);
         })
     }
 
@@ -110,7 +156,7 @@ function Evaluate() {
                                     let selected = agents.filter(agent => {
                                         return agent.id === _id;
                                     });
-                                    setInterval(selected[0].train_interval);
+                                    _setInterval(selected[0].train_interval);
                                 } else {
                                     setSelectedAgent('');
                                 }
@@ -122,6 +168,13 @@ function Evaluate() {
                     <div className="box">
                         <div className="title">
                             <h2>Evaluations</h2>
+                        </div>
+                        <div className="agents-table" style={{height: 400, width: '100%' }}>
+                            <DataGrid
+                                rows={evals}
+                                columns={evalCols}
+                                pageSize={10}
+                            />
                         </div>
                         { localStorage.getItem("evals") && JSON.parse(localStorage.getItem("evals")).toString() }
                     </div>
