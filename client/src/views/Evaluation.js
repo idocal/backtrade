@@ -1,8 +1,9 @@
 import * as React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Link} from 'react-router-dom';
 import AreaChart from '../components/AreaChart';
 import { parse } from 'date-fns';
 import { getTime } from 'date-fns';
+import './Evaluation.css';
 
 
 function ledgerToChartData(ledger) {
@@ -39,15 +40,21 @@ export default function Evaluation() {
       <div className="evaluation modal">
         <div className="main-space">
             <div className="box">
-                {
-                    !!results && (
-                        <AreaChart 
+                <div className="title">
+                    <Link to="/evaluate"><h2> &larr; </h2></Link>
+                    <h2>Agent Evaluation</h2>
+                </div>
+                <div className="chart">
+                    {
+                        !!results && (
+                            <AreaChart 
                             data={ledgerToChartData(results)}
                             title='Balance over time'
                             metric='Balance'
-                        />
-                    )
-                }
+                            />
+                        )
+                    }
+                </div>
             </div>
         </div>
       </div>

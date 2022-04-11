@@ -196,7 +196,6 @@ function Evaluate() {
                                     navigate(`/evaluate/${evalId}`);
                                 }}
                             />
-                            { localStorage.getItem("evals").toString() }
                         </div>
                     </div>
                 </div>

@@ -1,0 +1,12 @@
+.evaluation .chart {
+    margin-top: 40px;
+}
+
+.evaluation .title {
+    display: flex;
+}
+
+.evaluation .title a {
+    color: inherit;
+    margin-right: 10px;
+}

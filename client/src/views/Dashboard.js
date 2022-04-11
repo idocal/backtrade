@@ -3,6 +3,7 @@ import './Dashboard.css';
 import icBalance from '../img/ic-balance.png';
 import icAgents from '../img/ic-agents.png';
 import icApy from '../img/ic-apy.png';
+import AgentsChart from '../img/agents-chart.png';
 
 function Dashboard() {
 
@@ -35,6 +36,8 @@ function Dashboard() {
                         <Metric name="Balance" value="$87,743" />
                         <Metric name="Agents" value="4" />
                         <Metric name="APY" value="+12.3%" />
+                    </div>
+                    <div className="chart" style={{backgroundImage: `url(${AgentsChart})`}}>
                     </div>
                 </div>
             </div>
