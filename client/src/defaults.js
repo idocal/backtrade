@@ -2,7 +2,10 @@ const defaults = {
     "assets": [
         "BTC",
         "ETH",
-        "BNB"
+        "ETC",
+        "BNB",
+        "XRP",
+        "LTC"
     ],
     "intervals" : [
         "1m",
