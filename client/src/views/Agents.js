@@ -41,7 +41,7 @@ function Agents() {
             </div>
             <div className="list">
                 { agents.map( (agent, i) => {
-                    let progress = Math.min(agent.train_progress, 1) * 100;
+                    let progress = Math.max(0, Math.min(agent.train_progress, 1)) * 100;
                     let done = progress === 100 ? " done" : "";
                     progress = progress.toString() + "%";
                     return (
