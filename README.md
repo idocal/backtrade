@@ -45,26 +45,26 @@ $ npm install
 $ brew services start poostgresql
 $ brew services start redis
 ```
-1b. Initialize the DB structure using **alembic** [OPTIONAL Only when changing DB models and testing]
+
+2. Initialize the DB structure using **alembic** [OPTIONAL Only when changing DB models and testing]
 
 If running for the first time do inside the api folder
+
 ```sh 
 $ alembic init alembic
 ```
-Next,
 
-    a. If necessary(when changing models) drop the current tables in the DB by manual cascade drop (can be done in pgAdmin).
-        This is only for testing phases.
+3. If necessary(when changing models) drop the current tables in the DB by manual cascade drop (can be done in pgAdmin). This is only for testing phases.
 
-    b. Run the init revision for alembic. This is the init file which is found in the api/alembic/versions folder. 
-        If it doesn't exist run 'alembic revision -m "init" '
+4. Run the init revision for alembic. This is the init file which is found in the api/alembic/versions folder. If it doesn't exist run 'alembic revision -m "init" '
 
 ```sh
 $ alembic upgrade <init revision number>
 ```
-```python
+
 The init revision file should contain the following: 
 
+```python
 from api.db.models import Agent, Trade, Balance
 def upgrade():
     cols = [c for c in Agent.__table__.columns]
@@ -78,7 +78,7 @@ def upgrade():
 ```
     
 
-2. Run the API server:  
+5. Run the API server:  
 ```sh
 $ export PYTHONPATH="${PYTHONPATH}:${PWD}"
 $ cd api
@@ -91,7 +91,7 @@ This will load a web server with hot reload on http://localhost:8000
 
 Swagger API is available at: http://localhost:8000/docs
 
-3. Run client server:
+6. Run client server:
 ```
 $ cd client
 $ npm run start
